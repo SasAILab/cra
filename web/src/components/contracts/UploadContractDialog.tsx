@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, X, FileText, Loader2 } from "lucide-react";
 import { contractService } from "@/services/contract";
-import { CONTRACT_TYPES } from "@/types/contract";
+import { CONTRACT_TYPES, CONTRACT_DEPARTMENTS } from "@/types/contract";
+import { toast } from "@/store/toast";
 
 interface UploadContractDialogProps {
   onUploadSuccess?: () => void;
@@ -15,18 +16,16 @@ interface UploadContractDialogProps {
 
 export function UploadContractDialog({ onUploadSuccess, trigger }: UploadContractDialogProps) {
   const [open, setOpen] = useState(false);
-  const [files, setFiles] = useState<{ file: File; type: string }[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [defaultType, setDefaultType] = useState<string>(CONTRACT_TYPES[0]);
+  const [category, setCategory] = useState<string>(CONTRACT_TYPES[0]);
+  const [department, setDepartment] = useState<string>("A");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files).map(file => ({
-        file,
-        type: defaultType
-      }));
+      const newFiles = Array.from(e.target.files);
       setFiles((prev) => [...prev, ...newFiles]);
       setError(null);
     }
@@ -39,18 +38,6 @@ export function UploadContractDialog({ onUploadSuccess, trigger }: UploadContrac
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleTypeChange = (index: number, newType: string) => {
-    setFiles(prev => prev.map((item, i) => i === index ? { ...item, type: newType } : item));
-  };
-
-  const handleDefaultTypeChange = (newType: string) => {
-    setDefaultType(newType);
-    // Optional: Update all existing files to the new default?
-    // User flow: "if didn't choose others, use default". 
-    // It's helpful to update all when changing the main dropdown.
-    setFiles(prev => prev.map(item => ({ ...item, type: newType })));
-  };
-
   const handleUpload = async () => {
     if (files.length === 0) {
       setError("Please select at least one file.");
@@ -61,23 +48,26 @@ export function UploadContractDialog({ onUploadSuccess, trigger }: UploadContrac
     setError(null);
 
     try {
-      const fileObjs = files.map(f => f.file);
-      const types = files.map(f => f.type);
-
       if (files.length === 1) {
-        await contractService.uploadSingle(fileObjs[0], types[0]);
+        await contractService.uploadSingle(files[0], category, department);
       } else {
-        await contractService.uploadBatch(fileObjs, types);
+        await contractService.uploadBatch(files, category, department);
       }
       
       setFiles([]);
       setOpen(false);
+      toast.success("Contract(s) uploaded successfully");
       if (onUploadSuccess) {
         onUploadSuccess();
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Upload failed");
+      let errorMessage = err.message || "Upload failed";
+      if (errorMessage.includes("Maximum upload size exceeded")) {
+        errorMessage = "文件过大，最大只能上传50M的文件";
+      }
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }
@@ -104,23 +94,38 @@ export function UploadContractDialog({ onUploadSuccess, trigger }: UploadContrac
         <DialogHeader>
           <DialogTitle>Upload Contract</DialogTitle>
           <DialogDescription>
-            Upload contract files (PDF, DOCX) and specify their types.
+            Upload contract files (PDF, DOCX) and specify their details.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="flex items-center gap-4">
-             <label className="text-sm font-medium whitespace-nowrap">Default Type:</label>
-             <Select value={defaultType} onValueChange={handleDefaultTypeChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select contract type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONTRACT_TYPES.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-             </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+               <label className="text-sm font-medium">Contract Type</label>
+               <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONTRACT_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+               </Select>
+            </div>
+            <div className="space-y-2">
+               <label className="text-sm font-medium">Department</label>
+               <Select value={department} onValueChange={setDepartment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONTRACT_DEPARTMENTS.map(dept => (
+                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                    ))}
+                  </SelectContent>
+               </Select>
+            </div>
           </div>
 
           <div className="flex items-center justify-center w-full">
@@ -134,7 +139,7 @@ export function UploadContractDialog({ onUploadSuccess, trigger }: UploadContrac
                   <span className="font-semibold">Click to upload</span>
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PDF, DOCX (Max 10MB)
+                  PDF, DOCX (Max 50MB)
                 </p>
               </div>
               <input
@@ -151,24 +156,16 @@ export function UploadContractDialog({ onUploadSuccess, trigger }: UploadContrac
 
           {files.length > 0 && (
             <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
-              {files.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md text-sm gap-2">
+              {files.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md text-sm">
                   <div className="flex items-center gap-2 overflow-hidden flex-1">
                     <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                    <span className="truncate max-w-[150px]" title={item.file.name}>{item.file.name}</span>
+                    <span className="truncate max-w-[300px]" title={file.name}>{file.name}</span>
+                    <span className="text-xs text-muted-foreground flex-shrink-0">
+                      ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </span>
                   </div>
                   
-                  <Select value={item.type} onValueChange={(val) => handleTypeChange(index, val)}>
-                    <SelectTrigger className="w-[180px] h-8 text-xs">
-                      <SelectValue placeholder="Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {CONTRACT_TYPES.map(type => (
-                            <SelectItem key={type} value={type} className="text-xs">{type}</SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-
                   <Button
                     variant="ghost"
                     size="icon"

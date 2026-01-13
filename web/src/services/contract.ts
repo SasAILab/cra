@@ -1,13 +1,13 @@
 import { apiFetch, CONTRACT_SERVICE_URL } from "@/lib/api";
-import { ContractMain } from "@/types/contract";
+import { ContractContent, ContractMain } from "@/types/contract";
 import { useAuthStore } from "@/store/auth";
 
 export const contractService = {
-  uploadSingle: async (file: File, category: string): Promise<ContractMain> => {
+  uploadSingle: async (file: File, category: string, department: string): Promise<ContractMain> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("category", category);
-    formData.append("contractType", category); // Try both standard names
+    formData.append("department", department);
     const token = useAuthStore.getState().token || undefined;
     
     const res = await apiFetch("/upload/single", {
@@ -21,14 +21,11 @@ export const contractService = {
     return res.data;
   },
 
-  uploadBatch: async (files: File[], categories: string[]): Promise<ContractMain[]> => {
+  uploadBatch: async (files: File[], category: string, department: string): Promise<ContractMain[]> => {
     const formData = new FormData();
     files.forEach(file => formData.append("files", file));
-    // Append categories in order. Backend should bind List<String> categories
-    categories.forEach(cat => {
-        formData.append("categories", cat);
-        formData.append("contractTypes", cat); // Try both
-    });
+    formData.append("category", category);
+    formData.append("department", department);
     
     const token = useAuthStore.getState().token || undefined;
 
@@ -103,23 +100,59 @@ export const contractService = {
     return res.data;
   },
 
+  getContractFileBlobUrl: async (contractId: number): Promise<string | null> => {
+      const token = useAuthStore.getState().token || undefined;
+      const url = `${CONTRACT_SERVICE_URL}/${contractId}/file`;
+      
+      try {
+          const headers: HeadersInit = {};
+          if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+          }
+          
+          const response = await fetch(url, {
+              headers
+          });
+          
+          if (!response.ok) return null;
+          
+          const blob = await response.blob();
+          return URL.createObjectURL(blob);
+      } catch (e) {
+          console.error("Failed to fetch PDF", e);
+          return null;
+      }
+  },
+
   getContractContent: async (contractId: number): Promise<string> => {
     const token = useAuthStore.getState().token || undefined;
-    // Try to fetch content. Assuming endpoint /content/{contractId} or similar.
-    // Based on common patterns: /content?contractId={id} or /content/{id}
-    // Let's try /content/{id} relative to CONTRACT_SERVICE_URL which is /api/contracts
-    // So it becomes /api/contracts/content/{id}
-    const res = await apiFetch(`/content/${contractId}`, {}, token, CONTRACT_SERVICE_URL);
+    const res = await apiFetch(`/${contractId}/content`, {}, token, CONTRACT_SERVICE_URL);
 
     if (res.code !== 200) {
-       // If fail, return empty or throw? Return empty string to be safe for UI
        console.warn("Failed to fetch contract content", res);
        return "";
     }
-    // Assuming it returns ContractContent object or just string?
-    // If it returns ContractContent object, we need .content or .plainTextContent
     if (typeof res.data === 'string') return res.data;
-    return res.data?.plainTextContent || res.data?.content || "";
+    // Prioritize content over plainTextContent
+    return res.data?.content || res.data?.plainTextContent || "";
+  },
+
+  getContractFullContent: async (contractId: number): Promise<ContractContent | null> => {
+    const token = useAuthStore.getState().token || undefined;
+    const res = await apiFetch(`/${contractId}/content`, {}, token, CONTRACT_SERVICE_URL);
+
+    if (res.code !== 200) {
+       console.warn("Failed to fetch contract content", res);
+       return null;
+    }
+    // If backend returns string directly, wrap it in ContractContent object
+    if (typeof res.data === 'string') {
+      return {
+        content: res.data,
+        plainTextContent: res.data
+      } as unknown as ContractContent;
+    }
+    return res.data as ContractContent;
   },
 
   updateContract: async (id: number, contract: Partial<ContractMain>): Promise<ContractMain> => {
@@ -132,6 +165,19 @@ export const contractService = {
 
     if (res.code !== 200) {
         throw new Error(res.message || "Update contract failed");
+    }
+    return res.data;
+  },
+
+  reviewContract: async (contract: ContractMain): Promise<ContractMain> => {
+    const token = useAuthStore.getState().token || undefined;
+    const res = await apiFetch("/agent/review", {
+        method: "POST",
+        body: JSON.stringify(contract)
+    }, token, CONTRACT_SERVICE_URL);
+
+    if (res.code !== 200) {
+        throw new Error(res.message || "Review contract failed");
     }
     return res.data;
   }

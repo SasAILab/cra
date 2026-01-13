@@ -25,6 +25,7 @@ export interface ContractContent {
   htmlContent: string;
   extractedClauses: string;
   metadata: string;
+  knowledgeGraph?: string; // JSON string
   creatorId: string;
   createTime: string;
   updateTime: string;
@@ -55,3 +56,17 @@ export const CONTRACT_TYPES = [
   "Service Agreement",
   "Other"
 ];
+
+export const CONTRACT_DEPARTMENTS = [
+  "A",
+  "B",
+  "C",
+  "D"
+];
+
+export interface ContractReviewMessage {
+  step: "OCR" | "KG_BUILD" | "REVIEW_START" | "REVIEW_ALL";
+  status: "PROCESSING" | "COMPLETED" | "FAILED" | "SKIPPED";
+  data: any;
+  timestamp: number;
+}

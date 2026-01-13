@@ -3,6 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Card,
   CardContent,
   CardHeader,
@@ -33,11 +41,14 @@ import { UploadContractDialog } from "@/components/contracts/UploadContractDialo
 import { ContractStatus, CONTRACT_STATUS_MAP, ContractMain } from "@/types/contract";
 import { contractService } from "@/services/contract";
 import { format } from "date-fns";
+import { toast } from "@/store/toast";
 
 export default function ContractsPage() {
   const [contracts, setContracts] = useState<ContractMain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contractToDelete, setContractToDelete] = useState<number | null>(null);
 
   const loadContracts = useCallback(async () => {
     setLoading(true);
@@ -47,7 +58,9 @@ export default function ContractsPage() {
       setError(null);
     } catch (err: any) {
       console.error("Failed to fetch contracts:", err);
-      setError(err.message || "Failed to load contracts");
+      const errorMessage = err.message || "Failed to load contracts";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -61,13 +74,36 @@ export default function ContractsPage() {
     loadContracts();
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this contract?")) return;
+  const handleDeleteClick = (id: number) => {
+    setContractToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!contractToDelete) return;
+    
     try {
-      await contractService.deleteContract(id);
+      await contractService.deleteContract(contractToDelete);
+      toast.success("Contract deleted successfully");
       loadContracts();
     } catch (err: any) {
-      alert(err.message || "Delete failed");
+      const msg = err.message || "Delete failed";
+      toast.error(msg);
+    } finally {
+      setDeleteDialogOpen(false);
+      setContractToDelete(null);
+    }
+  };
+
+  const handleReview = async (contract: ContractMain) => {
+    try {
+        toast.success(`Starting review for ${contract.contractName}...`);
+        await contractService.reviewContract(contract);
+        toast.success(`Review started for ${contract.contractName}`);
+        loadContracts();
+    } catch (err: any) {
+        console.error(err);
+        toast.error(err.message || "Failed to start review");
     }
   };
 
@@ -160,7 +196,12 @@ export default function ContractsPage() {
                       <TableCell>{contract.updateTime ? format(new Date(contract.updateTime), 'yyyy-MM-dd') : "-"}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                           <Button variant="ghost" size="icon" title="Start Review">
+                           <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            title="Start Review"
+                            onClick={() => handleReview(contract)}
+                           >
                             <Play className="h-4 w-4" />
                           </Button>
                           <Link href={`/contracts/${contract.id}`}>
@@ -173,7 +214,7 @@ export default function ContractsPage() {
                             size="icon" 
                             className="text-destructive hover:text-destructive" 
                             title="Delete"
-                            onClick={() => handleDelete(contract.id)}
+                            onClick={() => handleDeleteClick(contract.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -187,6 +228,21 @@ export default function ContractsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Contract</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this contract? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
