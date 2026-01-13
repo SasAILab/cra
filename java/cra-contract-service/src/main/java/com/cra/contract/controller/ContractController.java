@@ -2,6 +2,7 @@ package com.cra.contract.controller;
 
 import com.cra.contract.entity.ContractMain;
 import com.cra.contract.entity.ContractVersion;
+import com.cra.contract.entity.ContractContent;
 import com.cra.contract.service.ContractService;
 import com.cra.common.model.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,17 +36,21 @@ public class ContractController {
 
     // 上传合同
     @PostMapping("/upload/single")
-    public Response<ContractMain> uploadSingleContract(@RequestParam("file") MultipartFile file) {
-        return contractService.uploadContractFile(file);
+    public Response<ContractMain> uploadSingleContract(@RequestParam("file") MultipartFile file,
+                                                     @RequestParam(value = "category", required = false) String category,
+                                                     @RequestParam(value = "department", required = false) String department) {
+        return contractService.uploadContractFile(file, category, department);
     }
 
     // 批量上传合同
     @PostMapping("/upload/batch")
-    public Response<List<ContractMain>> uploadBatchContracts(@RequestParam(value = "files", required = false) MultipartFile[] files) {
+    public Response<List<ContractMain>> uploadBatchContracts(@RequestParam(value = "files", required = false) MultipartFile[] files,
+                                                           @RequestParam(value = "category", required = false) String category,
+                                                           @RequestParam(value = "department", required = false) String department) {
         if (files == null || files.length == 0) {
             return Response.fail(400, "请选择至少一个文件");
         }
-        return contractService.batchUploadContractFiles(files);
+        return contractService.batchUploadContractFiles(files, category, department);
     }
 
     // 更新合同
@@ -66,7 +71,6 @@ public class ContractController {
         return contractService.reviewContract(contract);
     }
 
-    // 通过id获取合同信息
     @GetMapping("/{id}")
     public Response<ContractMain> getContractById(@PathVariable Long id) {
         return contractService.getContractById(id);
@@ -89,6 +93,26 @@ public class ContractController {
         return contractService.getAllContracts(pageable);
     }
     
+    
+    @GetMapping("/{id}/file")
+    public ResponseEntity<org.springframework.core.io.Resource> getContractFile(@PathVariable Long id, 
+                                                                              @RequestParam(required = false) Integer version) {
+        try {
+            java.io.InputStream inputStream = contractService.getContractFile(id, version);
+            org.springframework.core.io.InputStreamResource resource = new org.springframework.core.io.InputStreamResource(inputStream);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=contract.pdf");
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/search")
     public Response<Page<ContractMain>> searchContracts(@RequestParam String keyword, 
                                                        @RequestParam(defaultValue = "0") int page, 
@@ -154,7 +178,7 @@ public class ContractController {
     
     // 合同内容管理
     @GetMapping("/{id}/content")
-    public Response<String> getContractContent(@PathVariable Long id, 
+    public Response<ContractContent> getContractContent(@PathVariable Long id, 
                                               @RequestParam(value = "version", required = false) Integer version) {
         return contractService.getContractContent(id, version);
     }

@@ -47,6 +47,9 @@ public class ContractMain {
     
     @Column(name = "creator_id", nullable = false)
     private String creatorId; // 创建人ID
+
+    @Column(name = "setor_id", nullable = false)
+    private String setorId; // 修改人ID | 为了能看到是哪个AI操作的合同
     
     @Column(name = "create_time", nullable = false)
     private LocalDateTime createTime; // 创建时间
@@ -56,4 +59,5 @@ public class ContractMain {
     
     @Column(name = "remark")
     private String remark; // 备注
+
 }

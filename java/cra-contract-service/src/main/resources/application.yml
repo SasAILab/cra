@@ -13,6 +13,10 @@ spring:
         file-extension: yml
         import-check:
           enabled: false   # 关闭 spring.config.import 检查
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://172.16.107.15:5432/contract_db
@@ -39,6 +43,19 @@ spring:
   elasticsearch:
     uris: http://172.16.107.15:9200
 
+# SFTP和SSH 配置
+remote:
+  host: 172.16.107.15
+  port: 22
+  username: 202312150002
+  password: 20001017aA@
+  # 合同文件存储路径
+  upload-path: /data1/nuist_llm/java-project/cra/files/contracts
+  # OCR结果输出路径
+  ocr-output-path: /data1/nuist_llm/java-project/cra/files/contracts/ocr_result
+  # Mineru命令路径
+  mineru-command: mineru
+
 ftp:
   host: 172.27.192.1
   port: 1007
@@ -46,7 +63,6 @@ ftp:
   password: 
   base-path: /contracts
 
-# 忽略的日志
 logging:
   level:
     org.apache.pdfbox: ERROR
@@ -54,3 +70,7 @@ logging:
 
 server:
   port: 8082 # 合同服务端口
+
+# Python AI 服务配置
+python-service:
+  base-url: http://localhost:8000/pycra/v1

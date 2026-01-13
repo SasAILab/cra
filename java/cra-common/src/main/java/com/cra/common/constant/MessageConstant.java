@@ -1,4 +1,4 @@
-package com.cra.constant;
+package com.cra.common.constant;
 
 /**
  * 信息提示常量类

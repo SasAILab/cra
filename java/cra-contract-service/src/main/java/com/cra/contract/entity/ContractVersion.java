@@ -17,7 +17,7 @@ public class ContractVersion {
     private Long contractId; // 关联合同ID
     
     @Column(name = "version_number", nullable = false)
-    private Integer versionNumber; // 版本号
+    private Integer versionNumber; // 1: 基础版本-上传的未经过任何处理的版本 2: OCR-处理的版本 3: Agent-处理的版本 4: 智能合约-处理的版本
     
     @Column(name = "content_hash", nullable = false)
     private String contentHash; // 内容哈希
@@ -42,4 +42,6 @@ public class ContractVersion {
     
     @Column(name = "create_time", nullable = false)
     private LocalDateTime createTime; // 创建时间
+
+
 }

@@ -24,9 +24,17 @@ public class ContractContent {
     
     private String metadata; // 文档元数据（JSON格式）
     
+    // OCR 详细结果字段
+    private String middleJson; // 中间处理结果 (middle.json)
+    private String modelOutput; // 模型推理结果 (model.json)
+    private String contentList; // 内容列表 (content_list.json)
+
+    private String knowledgeGraph; // 知识图谱数据 (Nodes + Edges)
+    
     private String creatorId; // 创建人ID
     
     private LocalDateTime createTime; // 创建时间
     
     private LocalDateTime updateTime; // 更新时间
+
 }
