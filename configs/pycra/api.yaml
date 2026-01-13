@@ -3,6 +3,7 @@ app:
   version: "0.1.0"
   env: "development"
   debug: true
+  api_prefix: "/pycra/v1"
 
 server:
   host: "0.0.0.0"

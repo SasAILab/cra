@@ -1,7 +1,7 @@
 import os
 import yaml
 from typing import Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
 class AppSettings(BaseModel):
@@ -9,6 +9,7 @@ class AppSettings(BaseModel):
     version: str
     env: str
     debug: bool
+    api_prefix: str
 
 class ServerSettings(BaseModel):
     host: str
@@ -37,6 +38,14 @@ class LLMSettings(BaseModel):
     base_url: Optional[str] = None
     # providers: Dict[str, LLMProviderSettings] = Field(default_factory=dict)
     providers: str
+
+class KnowledgeGraphSettings(BaseModel):
+    working_dir: str
+    namespace: str
+    max_loop: int
+    max_summary_tokens: int
+    chunk_size: int
+    chunk_overlap: int
 
 class EmbeddingSettings(BaseModel):
     model_name: str
@@ -90,12 +99,13 @@ class Config(BaseSettings):
     server: ServerSettings
     logging: LoggingSettings
     # TODO Open the following notes
-    # llm: LLMSettings
-    # embeddings: EmbeddingSettings
+    llm: LLMSettings
+    embeddings: EmbeddingSettings
     vector_store: VectorStoreSettings
     graph_store: GraphStoreSettings
     rag: RagSettings
     agents: AgentSettings
+    kg: KnowledgeGraphSettings
 
     @classmethod
     def load_config(cls, config_path: str = None) -> "Config":
@@ -116,9 +126,10 @@ class Config(BaseSettings):
             "api": os.path.join(base, "api.yaml"),
             "logging": os.path.join(base, "logging.yaml"),
             # TODO Open the following notes
-            # "llm": os.path.join(parent_dir, "llm.yaml"),
+            "llm": os.path.join(parent_dir, "llm.yaml"),
             "db": os.path.join(parent_dir, "db.yaml"),
             "rag": os.path.join(base, "rag.yaml"),
+            "kg": os.path.join(base, "kg.yaml")
         }
 
         merged: Dict[str, Any] = {}
