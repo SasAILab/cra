@@ -2,15 +2,23 @@ try:
     from contextlib import asynccontextmanager
 except ImportError:
     from contextlib2 import asynccontextmanager # type: ignore
-
-from fastapi import FastAPI, HTTPException
+import os
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 
 from pycra.api.middleware import register_exception_handlers
 from pycra import settings
 from pycra.utils import setup_logger
+from pycra.api.core import get_factory
+from pycra.api.router import cckg_router
 import uvicorn
-
+os.environ['HTTP_PROXY'] = ''
+os.environ['HTTPS_PROXY'] = ''
+os.environ['http_proxy'] = ''
+os.environ['https_proxy'] = ''
+os.environ['NO_PROXY'] = '*'
+os.environ['no_proxy'] = '*'
 api_logger = setup_logger(name="pycra-api")
 
 @asynccontextmanager
@@ -21,20 +29,18 @@ async def lifespan(fastapi_app: FastAPI):
     try:
         yield
     finally:
-        await close_factory()
         api_logger.info("The pycra API service is shut down")
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="pycra API",
+        title=settings.app.name,
         description="Welcome to pycra: a Contract Review Agent",
-        version="1.0.0",
+        version=settings.app.version,
         lifespan=lifespan,
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json"
     )
-    config = get_config()
     app.add_middleware(
         CORSMiddleware,
         allow_origins="*",
@@ -43,7 +49,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     register_exception_handlers(app)
-    app.include_router(smw_router, prefix=config.get("api_prefix"))
+    
+    # Include routers
+    app.include_router(cckg_router, prefix=settings.app.api_prefix)
 
     @app.get("/", tags=["Root"])
     async def root():
@@ -56,21 +64,16 @@ def create_app() -> FastAPI:
 
     @app.get("/health", tags=["Health"])
     async def health_check():
-        config = get_config()
         return {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "config_valid": config.validate()
+            "version": getattr(settings.app, "version", "1.0.0")
         }
 
     return app
 
 
 app = create_app()
-
-@app.get("/health")
-async def health_check():
-    return {"status": "ok", "version": settings.app.version}
 
 if __name__ == "__main__":
     uvicorn.run(

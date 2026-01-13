@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.documents import Document
 
-from pycra.core.llm_factory import LLMFactory
+from pycra.core.llm_server import LLMFactory
 from pycra.core.document_processing import DocumentLoader, DocumentSplitter
 from pycra.core.rag import VectorStoreFactory, GraphStore, GraphRAGEngine
 from pycra.utils import logger
