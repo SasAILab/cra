@@ -437,6 +437,7 @@ public class ContractServiceImpl implements ContractService {
                 String contractText = updatedContent.getContent();
                 logger.info("合同文本长度: {}", contractText.length());
                 if (StringUtils.hasText(contractText)) {
+                    // TODO 分别提取出来各个字段
                     String kgResult = callKnowledgeGraphBuildApi(contractText, String.valueOf(existingContract.getId()));
                     logger.info("知识图谱构建成功");
                     // 保存图谱数据
