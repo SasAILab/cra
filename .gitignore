@@ -74,3 +74,6 @@ replay_pid*
 __pycache__/
 *.py[cod]
 *$py.class
+
+# logs
+logs/

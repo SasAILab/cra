@@ -1,10 +1,9 @@
 # CRA- A Multi-Agent Collaborative Contract Reviewer System
-
 <div align="center"> 
-![CRA Web App](/docs/images/cra-crm-framework.png)
-
-*An enterprise-grade intelligent contract review system powered by Large Language Models (LLMs) and Agent technology.*
+An enterprise-grade intelligent contract review system powered by Large Language Models (LLMs) and Agent technology.
 </div>
+
+![CRA Web App](./docs/images/cra-crm-framework.png)
 
 ## Features
 
@@ -83,7 +82,7 @@ If you wish to use **LMDeploy** for high-performance local LLM inference, you ca
 
 ## Author
 
-**Elian** and the development team.
+**pycra** is independently developed by Elian, an AI algorithm engineer. His research interests lie in post-training of LLM-RL and agent development.
 
 ## Star History
 
