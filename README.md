@@ -1,11 +1,9 @@
 # CRA- A Multi-Agent Collaborative Contract Reviewer System
 
 <div align="center"> 
-![CRA Web App](docs/images/cra-crm-framework.png)
+![CRA Web App](/docs/images/cra-crm-framework.png)
 
-
-*An enterprise-grade intelligent contract review system powered by Large Language Models (LLMs) and Agent technology.
-*
+*An enterprise-grade intelligent contract review system powered by Large Language Models (LLMs) and Agent technology.*
 </div>
 
 ## Features
@@ -89,4 +87,4 @@ If you wish to use **LMDeploy** for high-performance local LLM inference, you ca
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Elian/ContractReviewAgent&type=Date)](https://star-history.com/#Elian/ContractReviewAgent&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Elian/ContractReviewAgent&type=Date)](https://star-history.com/#2Elian/crat&Date)
