@@ -7,7 +7,7 @@ public class MinerUTest {
     public static void main(String[] args) {
         String inputPath = "G:\\项目成果打包\\合同审查Agent\\test_cache\\4e55aa2f-2b1d-476e-9340-e915f665b7ce_录用通知书-李子茉-亿云.pdf";
         String outputPath = "G:\\项目成果打包\\合同审查Agent";
-        String mineruUrl = "http://172.16.107.15:30000";
+        String mineruUrl = "http://your_ap:30000";
 
         try {
             String inputText = readFile(inputPath);

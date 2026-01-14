@@ -16,23 +16,23 @@ spring:
           enabled: false   # 关闭 spring.config.import 检查
 
   datasource:
-    url: jdbc:postgresql://172.16.107.15:5432/contract_db
+    url: jdbc:postgresql://your_ap:5432/contract_db
     username: postgres
     password: 123456
     driver-class-name: org.postgresql.Driver
 
   data:
     mongodb:
-      host: 172.16.107.15
+      host: your_ap
       port: 27017
       database: contract_content
 
   redis:
-    host: 172.16.107.15
+    host: your_ap
     port: 6379
 
   rabbitmq:
-    host: 172.16.107.15
+    host: your_ap
     port: 5672
     username: admin
     password: 123456

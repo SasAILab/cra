@@ -1,7 +1,8 @@
 kg:
-  working_dir: 'your_log_file'
+  working_dir: 'cra/logs/pycra/kg'
   namespace: "graph"
   max_loop: 3
   max_summary_tokens: 200
   chunk_size: 1024
   chunk_overlap: 200
+  sub_graph_method: "bfs"

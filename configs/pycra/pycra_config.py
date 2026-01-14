@@ -46,6 +46,7 @@ class KnowledgeGraphSettings(BaseModel):
     max_summary_tokens: int
     chunk_size: int
     chunk_overlap: int
+    sub_graph_method: str
 
 class EmbeddingSettings(BaseModel):
     model_name: str

@@ -577,7 +577,7 @@ public class ContractServiceImpl implements ContractService {
      */
     private String callMinerUApi(String remoteFilePath, String outputDir) throws IOException {
         // TODO 写到配置文件
-        String apiUrl = "http://172.16.107.15:30000/file_parse"; // OCR服务地址
+        String apiUrl = "http://your_ap:30000/file_parse"; // OCR服务地址
         
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             // 下载远程文件到本地临时文件

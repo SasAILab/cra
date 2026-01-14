@@ -1,8 +1,8 @@
 llm:
-  model_name: "model_name"
+  model_name: "qwen30b"
   temperature: 0.0
-  api_key: "api_key"
-  base_url: "base_url"
+  api_key: "NuistMathAutoModelForCausalLM"
+  base_url: "http://your_ap:23333/v1"
   providers: "openai"
 
 embeddings:

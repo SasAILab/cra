@@ -1,7 +1,7 @@
 logging:
   level: "INFO" # DEBUG
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  file_path: "logs"
+  file_path: "cra/logs/pycra"
   save_days: 7
   when: "midnight" # "S/M/H" --> "midnight"每天00:00切分 --> "W0" ~ "W6"每周几切分
   interval: 1 #当 when="M" interval=15 每 15 分钟切一次

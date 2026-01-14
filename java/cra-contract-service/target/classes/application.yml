@@ -19,7 +19,7 @@ spring:
       max-request-size: 50MB
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://172.16.107.15:5432/contract_db
+    url: jdbc:postgresql://your_ap:5432/contract_db
     username: postgres
     password: 123456
   jpa:
@@ -31,21 +31,21 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     mongodb:
-      host: 172.16.107.15
+      host: your_ap
       port: 27017
       database: contract_content
   rabbitmq:
-    host: 172.16.107.15
+    host: your_ap
     port: 5672
     username: admin
     password: 123456
     virtual-host: /
   elasticsearch:
-    uris: http://172.16.107.15:9200
+    uris: http://your_ap:9200
 
 # SFTP和SSH 配置
 remote:
-  host: 172.16.107.15
+  host: your_ap
   port: 22
   username: 202312150002
   password: 20001017aA@
