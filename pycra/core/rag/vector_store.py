@@ -2,7 +2,7 @@ from typing import List, Optional
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 from langchain_community.vectorstores import Milvus, FAISS
-from pycra.core.llm_factory import LLMFactory
+from pycra.core.llm_server import LLMFactory
 from pycra import settings
 from pycra.utils import logger
 

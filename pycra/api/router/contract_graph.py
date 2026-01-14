@@ -13,7 +13,7 @@ async def build_contract_graph(request: ContractGraphRequest, kg_builder: KgBuil
     try:
         logger.info(f"build contract graph: id={request.contract_id}")
         # Extract entities and relationships
-        nodes, edges = await kg_builder.build_graph(
+        nodes, edges, namespaces = await kg_builder.build_graph(
             md_content=request.contract_text,
             contract_id=request.contract_id
         )
@@ -21,7 +21,8 @@ async def build_contract_graph(request: ContractGraphRequest, kg_builder: KgBuil
         response = BuildReturnModel(
             status="success",
             nodes=nodes,
-            edges=edges
+            edges=edges,
+            graph_namespace=namespaces
         )
         
         logger.info(f"{request.contract_id} successfully built contract graph")

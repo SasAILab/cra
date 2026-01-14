@@ -12,7 +12,7 @@ try:
 
 except ImportError as e:
     import importlib.util
-    spec = importlib.util.spec_from_file_location("settings", os.path.join(pycra_config_dir, "settings.py"))
+    spec = importlib.util.spec_from_file_location("settings", os.path.join(pycra_config_dir, "pycra_config.py"))
     pycra_config = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(pycra_config)
     settings = pycra_config.Config.load_config()

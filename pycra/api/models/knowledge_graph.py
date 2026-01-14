@@ -11,3 +11,4 @@ class BuildReturnModel(BaseModel):
     status: str
     nodes: Optional[List[Tuple[str, Dict]]] = None
     edges: Optional[List[Tuple[str, str, Dict]]] = None
+    graph_namespace: str = None

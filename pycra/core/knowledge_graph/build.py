@@ -26,13 +26,10 @@ class KgBuilder:
     def __init__(self, llm_pycra: BaseLLMClient = None):
         self.logger = setup_logger(name="pycra-KgBuilder")
         self.llm_pycra = llm_pycra
-        self.working_dir = settings.kg.working_dir
-        self.kg_instance = NetworkXStorage(
-            self.working_dir, namespace=settings.kg.namespace
-        )
         self.max_loop = settings.kg.max_loop
 
-    async def extract_entities_relations(self, chunk: Chunk) -> Tuple[Dict[str, List[dict]], Dict[Tuple[str, str], List[dict]]]:
+    # local_perception_recognition
+    async def local_perception_recognition(self, chunk: Chunk) -> Tuple[Dict[str, List[dict]], Dict[Tuple[str, str], List[dict]]]:
         """
         Main method to extract entities and relationships from contract content.
         
@@ -268,7 +265,11 @@ class KgBuilder:
         return chunks
 
     @time_record
-    async def build_graph(self, md_content: Optional[str] = None, contract_id: Optional[str] = None) -> Union[Tuple[list[tuple[str, dict]], list[tuple[str, str, dict]]], Tuple[None, None]]:
+    async def build_graph(self, md_content: Optional[str] = None, contract_id: Optional[str] = None) -> Tuple[
+        list[tuple[str, dict]],
+        list[tuple[str, str, dict]],
+        str
+    ]:
         """
         Extract entities and relationships from contract sections individually,
         then merge the results.
@@ -292,16 +293,34 @@ class KgBuilder:
         
         # core5: 速度保证 --> llm后端使用vllm/lmdeploy服务 chunks采用一个线程池 局部强召回的时候把全部chunks并发出去 全局再聚合到一起处理
         """
+        # TODO 图的质量保证 --> GraphGen的judge模块 来计算loss
+        # TODO 图谱的评估指标, 一个高质量的图谱对后续的任务是非常重要的 -->https://deepwiki.com/open-sciencelab/GraphGen/9.2-knowledge-graph-evaluation || https://deepwiki.com/open-sciencelab/GraphGen/9.3-confidence-calculation-and-metrics#yesno-loss-metrics
+        """
+        图谱评估指标
+            指标	描述	质量指标
+            total_nodes	图中的节点总数	图表大小
+            total_edges	图中的边总数	图密度
+            noise_ratio	孤立节点与总节点数的比率	越低越好（< 0.15）
+            largest_cc_ratio	最大连通分量的大小/节点总数	数值越高越好（> 0.90）
+            avg_degree	所有节点的平均节点度	应该在 [2.0, 5.0] 范围内 --> 节点的度数是指与该节点直接相连的边的数量
+            powerlaw_r2	度分布幂律拟合的 R² 值	数值越高越好（> 0.75） --> 度分布：统计图中不同度数（k）的节点数量分布 --> 幂律分布：很多真实网络（社交网络、互联网等）的度分布遵循 P(k) ∝ k^(-γ) 的规律,即少数节点有很多连接（hub节点）, 多数节点只有少量连接 --> R² 值含义: 衡量度分布符合幂律的程度 R² ∈ [0, 1]，越接近1表示拟合越好
+            is_robust	布尔值，指示是否满足所有阈值	通过/失败指示器
+        """
+
         # step1: Chapter divisions for md_content
         init_chunks = await self._split_chunks(md_content, contract_id)
         # step2: Local Extraction --> 局部强召回 这一步的目标是“宁可错杀，不可放过”, 在小范围内，尽可能多地把所有潜在的实体和关系都找出来。
         results = await run_concurrent(
-            self.extract_entities_relations,
+            self.local_perception_recognition,
             init_chunks,
             desc="[2/4]Extracting entities and relationships from chunks",
             unit="chunk",
         )
-
+        namespace_postfix = compute_content_hash(md_content)
+        namespace = f"{settings.kg.namespace}_{contract_id}_{namespace_postfix}"
+        kg_instance = NetworkXStorage(
+            settings.kg.working_dir, namespace=namespace
+        )
         # step3: 全局拓扑对齐 --> 将不同文本块中抽取的同一个实体统一成一个全局ID。
         nodes = defaultdict(list)
         edges = defaultdict(list)
@@ -312,19 +331,22 @@ class KgBuilder:
                 edges[tuple(sorted(k))].extend(
                     v)
         await run_concurrent(
-            lambda kv: self.merge_nodes(kv, kg_instance=self.kg_instance),
+            lambda kv: self.merge_nodes(kv, kg_instance=kg_instance),
             list(nodes.items()),
             desc="Inserting entities into storage",
         )
         await run_concurrent(
-            lambda kv: self.merge_edges(kv, kg_instance=self.kg_instance),
+            lambda kv: self.merge_edges(kv, kg_instance=kg_instance),
             list(edges.items()),
             desc="Inserting relationships into storage",
         )
-        return_nodes = await self.kg_instance.get_all_nodes()
-        return_egdes = await self.kg_instance.get_all_edges()
+        g = await kg_instance.get_graph()
+        file_name = f"{settings.kg.working_dir}/{namespace}.graphml"
+        NetworkXStorage.write_nx_graph(graph=g, file_name=file_name)
+        return_nodes = await kg_instance.get_all_nodes()
+        return_egdes = await kg_instance.get_all_edges()
 
-        return return_nodes, return_egdes
+        return return_nodes, return_egdes, namespace
 
 if __name__ == "__main__":
     import os

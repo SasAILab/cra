@@ -26,6 +26,12 @@ class ProductionWorkflowFactory(PyCraFactory):
         # embedding model
         # milvus db
 
+    # 如果有异步的self需要传递给后续的router 在这里添加
+    async def initialize(self):
+        # self.llm_langChain = await LLMFactory.create_llm()
+        # self.llm_pycra = await LLMFactory.create_llm_cli()
+        pass
+
     def create_current_contract_graphBuild_workflow(self) -> KgBuilder:
         return KgBuilder(self.llm_pycra)
 
@@ -35,7 +41,7 @@ async def get_factory() -> ProductionWorkflowFactory:
     global _factory
     if _factory is None:
         _factory = ProductionWorkflowFactory()
-        # await _factory.initialize()
+        await _factory.initialize()
     return _factory
 
 async def get_kgBuilder_async() -> KgBuilder:

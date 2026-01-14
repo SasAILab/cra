@@ -11,7 +11,7 @@ from pycra.api.middleware import register_exception_handlers
 from pycra import settings
 from pycra.utils import setup_logger
 from pycra.api.core import get_factory
-from pycra.api.router import cckg_router
+from pycra.api.router import cckg_router, selfqa_router
 import uvicorn
 os.environ['HTTP_PROXY'] = ''
 os.environ['HTTPS_PROXY'] = ''
@@ -52,6 +52,7 @@ def create_app() -> FastAPI:
     
     # Include routers
     app.include_router(cckg_router, prefix=settings.app.api_prefix)
+    app.include_router(selfqa_router, prefix=settings.app.api_prefix)
 
     @app.get("/", tags=["Root"])
     async def root():
