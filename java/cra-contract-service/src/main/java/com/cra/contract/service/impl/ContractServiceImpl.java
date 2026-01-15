@@ -363,6 +363,7 @@ public class ContractServiceImpl implements ContractService {
 
         // 推送开始消息
         ContractReviewWebSocket.sendMessage(String.valueOf(contract.getId()), "REVIEW_START", "PROCESSING", "开始合同智能审查");
+        logger.info("Contract[{}] Review Start - Version: {}", existingContract.getId(), getLatestContractVersion(existingContract.getId()).getData().getVersionNumber());
 
         // 获取最新版本和合同ID
         ContractVersion latestVersion = getLatestContractVersion(existingContract.getId()).getData();
@@ -374,9 +375,12 @@ public class ContractServiceImpl implements ContractService {
              * 合同审核第一步 --> OCR
              * */
             logger.info("step1-OCR服务");
+            logger.info("Contract[{}] Step 1: OCR Start. Input: {}, Output: {}", existingContract.getId(), inputPath, outputDir);
             ContractReviewWebSocket.sendMessage(String.valueOf(contract.getId()), "OCR", "PROCESSING", "正在进行OCR识别...");
 
             String jsonResult = callMinerUApi(inputPath, outputDir);
+            logger.info("Contract[{}] Step 1: OCR API Call Success", existingContract.getId());
+            
             // 解析OCR-API的返回结果
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(jsonResult);
@@ -407,6 +411,8 @@ public class ContractServiceImpl implements ContractService {
                     // TODO ocr的图片怎么存?
                     contractContentRepository.save(content);
                     logger.info("OCR Markdown内容及详细数据已保存到MongoDB数据库");
+                    logger.info("Contract[{}] Step 1: OCR Data Saved to MongoDB", existingContract.getId());
+                    
                     // 准备推送给前端的数据
                     Map<String, Object> ocrData = new HashMap<>();
                     ocrData.put("md_content", mdContent);
@@ -426,6 +432,7 @@ public class ContractServiceImpl implements ContractService {
              * 合同审核第2步 --> pycra
              * */
             logger.info("step2-pycra-CurrentContractKnowledgeGraphBuild服务");
+            logger.info("Contract[{}] Step 2: Knowledge Graph Build Start", existingContract.getId());
             ContractReviewWebSocket.sendMessage(String.valueOf(contract.getId()), "KG_BUILD", "PROCESSING", "正在为当前合同构建知识图谱...");
             
             try {
@@ -440,6 +447,8 @@ public class ContractServiceImpl implements ContractService {
                     // TODO 分别提取出来各个字段
                     String kgResult = callKnowledgeGraphBuildApi(contractText, String.valueOf(existingContract.getId()));
                     logger.info("知识图谱构建成功");
+                    logger.info("Contract[{}] Step 2: KG Build Success", existingContract.getId());
+                    
                     // 保存图谱数据
                     updatedContent.setKnowledgeGraph(kgResult);
                     contractContentRepository.save(updatedContent);
@@ -458,19 +467,23 @@ public class ContractServiceImpl implements ContractService {
                     );
                 } else {
                     logger.warn("合同内容为空，跳过知识图谱构建");
+                    logger.warn("Contract[{}] Step 2: Skipped (Empty Content)", existingContract.getId());
                     ContractReviewWebSocket.sendMessage(String.valueOf(contract.getId()), "KG_BUILD", "SKIPPED", "合同内容为空");
                 }
             } catch (Exception e) {
                 logger.error("知识图谱构建服务调用失败，但不影响OCR结果: {}", e.getMessage(), e);
+                logger.error("Contract[{}] Step 2: Failed - {}", existingContract.getId(), e.getMessage());
                 // 不抛出异常，保证OCR结果能返回给用户
                 ContractReviewWebSocket.sendMessage(String.valueOf(contract.getId()), "KG_BUILD", "FAILED", e.getMessage());
             }
 
             ContractReviewWebSocket.sendMessage(String.valueOf(contract.getId()), "REVIEW_ALL", "COMPLETED", "合同审查全流程结束");
+            logger.info("Contract[{}] Review Completed", existingContract.getId());
             return Response.success("合同审查已完成，请前端发送一个提示给用户", existingContract);
             
         } catch (Exception e) {
             logger.error("合同审查失败: {}", e.getMessage(), e);
+            logger.error("Contract[{}] Review Failed: {}", existingContract.getId(), e.getMessage(), e);
             ContractReviewWebSocket.sendMessage(String.valueOf(contract.getId()), "REVIEW_ALL", "FAILED", e.getMessage());
             throw new BusinessException(500, "合同审查失败: " + e.getMessage());
         }
@@ -577,7 +590,7 @@ public class ContractServiceImpl implements ContractService {
      */
     private String callMinerUApi(String remoteFilePath, String outputDir) throws IOException {
         // TODO 写到配置文件
-        String apiUrl = "http://your_ap:30000/file_parse"; // OCR服务地址
+        String apiUrl = "http://172.16.107.15:30000/file_parse"; // OCR服务地址
         
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             // 下载远程文件到本地临时文件

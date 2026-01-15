@@ -26,8 +26,10 @@ public class DatabaseFixer implements CommandLineRunner {
         try {
             // 尝试添加 setor_id 字段
             // 注意：如果字段已存在，PostgreSQL 会报错，所以我们捕获异常
-            // 修正：由于表中有历史数据，添加 NOT NULL 列必须指定默认值
-            String sql = "ALTER TABLE contract_main ADD COLUMN setor_id VARCHAR(255) DEFAULT 'system' NOT NULL";
+            // 修正：PostgreSQL 添加带 NOT NULL 的列需要谨慎
+            // 如果表不为空，不能直接添加 NOT NULL 除非有 DEFAULT。
+            // 这里我们先添加带 DEFAULT 的列
+            String sql = "ALTER TABLE contract_main ADD COLUMN IF NOT EXISTS setor_id VARCHAR(255) DEFAULT 'system' NOT NULL";
             jdbcTemplate.execute(sql);
             logger.info("DatabaseFixer: 成功添加字段 setor_id (默认值: system)");
         } catch (Exception e) {

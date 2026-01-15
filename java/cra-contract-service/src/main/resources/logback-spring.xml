@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 从 application.yml 读取配置 -->
+    <springProperty scope="context" name="LOG_PATH" source="custom.logging.path" defaultValue="logs/java"/>
+    <springProperty scope="context" name="MAX_FILE_SIZE" source="custom.logging.max-file-size" defaultValue="50MB"/>
+    <springProperty scope="context" name="MAX_HISTORY" source="custom.logging.max-history" defaultValue="30"/>
+    <springProperty scope="context" name="LOG_LEVEL" source="custom.logging.level" defaultValue="INFO"/>
+
+    <!-- 彩色日志格式 -->
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta([%thread]) %cyan(%logger{50}) - %msg%n" />
+    <!-- 文件日志格式 -->
+    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n" />
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 公共/系统日志 (Spring, Hibernate, etc.) -->
+    <appender name="FILE_COMMON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/cra-common.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/common/cra-common-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 业务/合同日志 (com.cra.contract) -->
+    <appender name="FILE_CONTRACT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/cra-contract.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/contract/cra-contract-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 用户/认证日志 (cn.dev33.satoken) -->
+    <appender name="FILE_USER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/cra-user.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/user/cra-user-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 错误日志 (Global ERROR) -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/cra-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/error/cra-error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Contract 模块日志配置 -->
+    <!-- additivity=false 确保不重复输出到 Root (FILE_COMMON) -->
+    <logger name="com.cra.contract" level="INFO" additivity="false">
+        <appender-ref ref="FILE_CONTRACT" />
+        <appender-ref ref="FILE_ERROR" /> <!-- 错误同时也记录到 error log -->
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- User/Auth 模块日志配置 (Sa-Token) -->
+    <logger name="cn.dev33.satoken" level="INFO" additivity="false">
+        <appender-ref ref="FILE_USER" />
+        <appender-ref ref="FILE_ERROR" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+    
+    <!-- 预留 User 模块 (以防后续添加 com.cra.user) -->
+    <logger name="com.cra.user" level="INFO" additivity="false">
+        <appender-ref ref="FILE_USER" />
+        <appender-ref ref="FILE_ERROR" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- 根日志配置 (其余所有日志 -> FILE_COMMON) -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE_COMMON" />
+        <appender-ref ref="FILE_ERROR" />
+    </root>
+
+</configuration>
