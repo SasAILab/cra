@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.5 Chrome/138.0.7204.251 Electron/37.6.1 Safari/537.36" version="28.2.5">
   <diagram id="contract-agent-arch" name="Contract Compliance Agent Architecture">
-    <mxGraphModel dx="1426" dy="849" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="2014" dy="1190" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -19,16 +19,16 @@
         <mxCell id="layer2" value="业务应用层 (Business Layer)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
           <mxGeometry x="40" y="140" width="1080" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="l2_1" value="合同审查模块&#xa;--&#xa;风险识别 / 模板匹配&#xa;质量评估 / 风险评分" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
+        <mxCell id="l2_1" value="OCR识别合同文档&lt;br&gt;--&lt;br&gt;OCR提取文字 / OCR定位文字&lt;br&gt;pdf2md / ocr数据存储" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
           <mxGeometry x="20" y="40" width="240" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="l2_2" value="合同起草模块&#xa;--&#xa;智能生成 / 策略选择&#xa;条款库检索 / 格式编排" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
+        <mxCell id="l2_2" value="合同图索引构建&lt;br&gt;--&lt;br&gt;节点/边生成 / 图构建&lt;br&gt;子图划分 / 子图问答" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
           <mxGeometry x="290" y="40" width="240" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="l2_3" value="待开发模块&lt;br&gt;--&lt;br&gt;xxx&amp;nbsp; /xxx&lt;br&gt;xxx&amp;nbsp; / xxx" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
+        <mxCell id="l2_3" value="合同审查&lt;br&gt;--&lt;br&gt;风险评估 / 风险等级分类&lt;br&gt;风险修改建议&amp;nbsp; / 其他" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
           <mxGeometry x="560" y="40" width="240" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="l2_4" value="待开发模块&lt;br&gt;--&lt;br&gt;xxx / xxx&lt;br&gt;xxx / xxx" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
+        <mxCell id="l2_4" value="问答chat&lt;br&gt;--&lt;br&gt;选定风险内容修订 / 选定内容再问答" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=left;spacingLeft=10;" parent="layer2" vertex="1">
           <mxGeometry x="820" y="40" width="240" height="80" as="geometry" />
         </mxCell>
         <mxCell id="layer3" value="AI 智能体层 (Agent Layer - LangChain / Multi-Agent)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
@@ -87,6 +87,18 @@
         </mxCell>
         <mxCell id="l5_6" value="Redis&#xa;(会话/缓存)" style="shape=step;whiteSpace=wrap;html=1;fillColor=#ffffff;" parent="layer5" vertex="1">
           <mxGeometry x="870" y="45" width="150" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="lw9f70TRiIUB8l8_ZJac-1" value="分层日志管理器" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1130" y="170" width="210" height="370" as="geometry" />
+        </mxCell>
+        <mxCell id="lw9f70TRiIUB8l8_ZJac-2" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;pycra日志管理&lt;/font&gt;&lt;/b&gt;&lt;div&gt;pycra-api&lt;/div&gt;&lt;div&gt;pycra-api.router&lt;/div&gt;&lt;div&gt;pycra-llm&lt;/div&gt;&lt;div&gt;pycra-rag&lt;/div&gt;" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=center;spacingLeft=10;" parent="lw9f70TRiIUB8l8_ZJac-1" vertex="1">
+          <mxGeometry x="15" y="40" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="lw9f70TRiIUB8l8_ZJac-6" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;java日志管理&lt;/font&gt;&lt;/b&gt;&lt;div&gt;java-user&lt;/div&gt;&lt;div&gt;java-contract&lt;/div&gt;&lt;div&gt;java-common&lt;/div&gt;&lt;div&gt;java-exception&lt;/div&gt;" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=center;spacingLeft=10;" parent="lw9f70TRiIUB8l8_ZJac-1" vertex="1">
+          <mxGeometry x="15" y="150" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="lw9f70TRiIUB8l8_ZJac-7" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;web日志管理&lt;/font&gt;&lt;/b&gt;&lt;div&gt;web-user&lt;/div&gt;&lt;div&gt;web-contract&lt;/div&gt;&lt;div&gt;web-exception&lt;/div&gt;" style="shape=whiteSpaceParts;html=1;fillColor=#ffffff;align=center;spacingLeft=10;" parent="lw9f70TRiIUB8l8_ZJac-1" vertex="1">
+          <mxGeometry x="15" y="260" width="180" height="80" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
