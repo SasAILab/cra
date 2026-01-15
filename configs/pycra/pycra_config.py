@@ -90,6 +90,7 @@ class AgentSettings(BaseModel):
     selfqa: SelfQASettings
 
 class Config(BaseSettings):
+    # 这里定义的name 必须在yaml里面有
     app: AppSettings
     server: ServerSettings
     logging: LoggingSettings
@@ -116,7 +117,7 @@ class Config(BaseSettings):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         base = current_dir
         parent_dir = os.path.abspath(os.path.join(base, '..'))
-
+        # 这里只是load文件 与name无关
         files = {
             "api": os.path.join(base, "api.yaml"),
             "logging": os.path.join(base, "logging.yaml"),
