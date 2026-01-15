@@ -8,8 +8,7 @@ from neo4j.exceptions import Neo4jError
 T = TypeVar("T")
 from langchain_community.graphs import Neo4jGraph
 from pycra import settings
-from pycra.utils import setup_logger
-logger = setup_logger(name="pycra.core.knowledge_graph.graph_store")
+from pycra.utils.logger import cckg_logger as logger
 
 class GraphStore:
     """

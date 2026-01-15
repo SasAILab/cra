@@ -5,7 +5,6 @@ from collections import Counter, defaultdict
 from pycra import settings
 from pycra.core.document_processing import chunk_documents, Chunk
 from pycra.core.knowledge_graph.graph_store import BaseGraphStorage, NetworkXStorage, neo4j_importer
-from pycra.utils import setup_logger
 from pycra.core.templates.kg import KG_EXTRACTION_PROMPT, KG_SUMMARIZATION_PROMPT
 from pycra.utils.common import (
     detect_main_language, pack_history_conversations,
@@ -16,6 +15,7 @@ from pycra.utils.common import (
 from pycra.core.llm_server import BaseLLMClient
 from pycra.utils.run_concurrent import run_concurrent
 from pycra.core.knowledge_graph.models import *
+from pycra.utils.logger import cckg_logger
 
 class KgBuilder:
     """
@@ -24,7 +24,7 @@ class KgBuilder:
     """
     
     def __init__(self, llm_pycra: BaseLLMClient = None):
-        self.logger = setup_logger(name="pycra-KgBuilder")
+        self.logger = cckg_logger
         self.llm_pycra = llm_pycra
         self.max_loop = settings.kg.max_loop
 

@@ -4,7 +4,7 @@ import tiktoken
 from typing import Dict, Any, List, Optional
 from pycra import settings
 from pycra.core.llm_server import LLMFactory
-from pycra.utils import logger
+from pycra.utils.logger import rag_logger as logger
 
 # Try importing GraphRAG components; handle missing dependencies gracefully
 try:

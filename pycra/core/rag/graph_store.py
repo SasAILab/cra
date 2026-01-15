@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 from langchain_community.graphs import Neo4jGraph
 from pycra import settings
-from pycra.utils import logger
+from pycra.utils.logger import rag_logger as logger
 
 class GraphStore:
     """

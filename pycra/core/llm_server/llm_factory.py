@@ -3,10 +3,9 @@ from langchain_openai import ChatOpenAI
 from langchain_core.language_models import BaseChatModel
 
 from pycra import settings
-from pycra.utils import setup_logger
-from .client import BaseLLMClient, OpenAIClient
+from pycra.utils.logger import llm_logger as logger
 from .tokenizer import Tokenizer
-logger = setup_logger(name="pycra-LlmFactory")
+from .client import BaseLLMClient, OpenAIClient
 
 class LLMFactory:
     """

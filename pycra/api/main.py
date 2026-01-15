@@ -9,7 +9,7 @@ from datetime import datetime
 
 from pycra.api.middleware import register_exception_handlers
 from pycra import settings
-from pycra.utils import setup_logger
+from pycra.utils import setup_logger, logger
 from pycra.api.core import get_factory
 from pycra.api.router import cckg_router, selfqa_router
 import uvicorn
@@ -19,17 +19,16 @@ os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 os.environ['NO_PROXY'] = '*'
 os.environ['no_proxy'] = '*'
-api_logger = setup_logger(name="pycra-api")
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
-    api_logger.info("Starting the pycra API service...")
+    logger.info("Starting the pycra API service...")
     await get_factory()
-    api_logger.info("pycra API service started successfully")
+    logger.info("pycra API service started successfully")
     try:
         yield
     finally:
-        api_logger.info("The pycra API service is shut down")
+        logger.info("The pycra API service is shut down")
 
 def create_app() -> FastAPI:
     app = FastAPI(

@@ -2,8 +2,7 @@ import asyncio
 import time
 from datetime import datetime, timedelta
 
-from pycra.utils.logger import setup_logger
-logger = setup_logger(name="pycra-llmService")
+from pycra.utils.logger import llm_logger as logger
 
 class RPM:
     def __init__(self, rpm: int = 1000):

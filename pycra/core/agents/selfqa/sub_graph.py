@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import Iterable, AsyncIterable
 
-from pycra.utils import setup_logger
+from pycra.utils.logger import selfqa_logger
 from pycra import settings
 from pycra.core.knowledge_graph.graph_store import NetworkXStorage
 from pycra.core.agents.selfqa.partition import DFSPartitioner, BFSPartitioner
@@ -9,7 +9,7 @@ from pycra.core.agents.selfqa.partition import DFSPartitioner, BFSPartitioner
 class SubGraphBuilder:
     def __init__(self):
         self.partitioner = DFSPartitioner() if settings.kg.sub_graph_method == "dfs" else BFSPartitioner()
-        self.logger = setup_logger(name="pycra-selfqa.SubGraphBuilder")
+        self.logger = selfqa_logger
 
     async def __call__(self, namespaces) -> AsyncIterable[pd.DataFrame]:
         kg_instance = NetworkXStorage(

@@ -4,7 +4,7 @@ from langchain_core.vectorstores import VectorStore
 from langchain_community.vectorstores import Milvus, FAISS
 from pycra.core.llm_server import LLMFactory
 from pycra import settings
-from pycra.utils import logger
+from pycra.utils.logger import rag_logger as logger
 
 class VectorStoreFactory:
     """

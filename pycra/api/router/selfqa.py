@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from pycra.api.models.common import ContractGraphRequest
-from pycra.utils import setup_logger
+from pycra.utils.logger import selfqa_logger as logger
 from pycra.core.knowledge_graph import KgBuilder
 from pycra.api.core.dependencies import get_kgBuilder_async, get_factory
 from pycra.api.models.knowledge_graph import BuildReturnModel
 from pycra.api.models.selfqa import SelfQaRequest, SelfQaSubgrapnResponse
 from pycra.core.agents.selfqa.sub_graph import SubGraphBuilder
-
-logger = setup_logger(name="pycra-api-selfqa")
 selfqa_router = APIRouter(prefix="/selfqa", tags=["SELF-QA"])  # current contract knowledge graph
 
 
@@ -67,7 +65,7 @@ async def test_selfqa_subgraph(request: SelfQaRequest) -> SelfQaSubgrapnResponse
                 "edges_sample": [f"{edge[0]}-{edge[1]}" for edge in edges] if edges else []
             })
 
-            print(f"获得第 {subgraph_count} 个子图数据，节点数: {node_count}, 边数: {edge_count}")
+            logger.info(f"获得第 {subgraph_count} 个子图数据，节点数: {node_count}, 边数: {edge_count}")
 
         return SelfQaSubgrapnResponse(
             success=True,

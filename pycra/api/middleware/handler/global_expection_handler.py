@@ -5,7 +5,6 @@ from pycra.utils import setup_logger
 
 logger = setup_logger("pycra-api.exception")
 
-
 def register_exception_handlers(app: FastAPI):
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):

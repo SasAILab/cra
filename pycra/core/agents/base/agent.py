@@ -1,5 +1,5 @@
 from langgraph.graph import StateGraph, END
-from pycra.core.agents.base_agent import BaseAgent
+from .base_agent import BaseAgent
 from .state import ContractReviewState
 from .nodes import ReviewNodes
 

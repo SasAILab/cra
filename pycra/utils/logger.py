@@ -60,4 +60,11 @@ def setup_logger(name: str) -> logging.Logger:
 
 
 # Create a default logger for the package
-logger = setup_logger("pycra")
+logger = setup_logger("pycra-api")
+# api logger
+selfqa_logger = setup_logger(name="pycra-api.selfqa")
+cckg_logger = setup_logger(name="pycra-api.cckg")
+
+# other service logger
+llm_logger = setup_logger(name="pycra-llmService")
+rag_logger = setup_logger("pycra-rag")

@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from pycra.api.models.common import ContractGraphRequest
-from pycra.utils import setup_logger
+from pycra.utils.logger import cckg_logger as logger
 from pycra.core.knowledge_graph import KgBuilder
 from pycra.api.core.dependencies import get_kgBuilder_async
 from pycra.api.models.knowledge_graph import BuildReturnModel
-logger = setup_logger(name="pycra-api-cckg")
 cckg_router = APIRouter(prefix="/cckg", tags=["CCKG"]) # current contract knowledge graph
 
 @cckg_router.post("/build", response_model=BuildReturnModel, tags=["CCKG"], summary="Build a contract graph for current contract")

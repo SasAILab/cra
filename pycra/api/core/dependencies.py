@@ -7,7 +7,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
-from pycra import settings
 from pycra.core.llm_server import LLMFactory
 from pycra.core.knowledge_graph.graph_store import neo4j_importer
 from pycra.core.knowledge_graph import KgBuilder
