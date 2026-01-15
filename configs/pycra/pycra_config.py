@@ -92,8 +92,13 @@ class ContractReviewAgentSettings(BaseModel):
     max_iterations: int
     timeout: int
 
+class SelfQASettings(BaseModel):
+    method: str
+    data_format: str
+
 class AgentSettings(BaseModel):
     contract_review: ContractReviewAgentSettings
+    selfqa: ServerSettings
 
 class Config(BaseSettings):
     app: AppSettings
@@ -130,7 +135,8 @@ class Config(BaseSettings):
             "llm": os.path.join(parent_dir, "llm.yaml"),
             "db": os.path.join(parent_dir, "db.yaml"),
             "rag": os.path.join(base, "rag.yaml"),
-            "kg": os.path.join(base, "kg.yaml")
+            "kg": os.path.join(base, "kg.yaml"),
+            "agents": os.path.join(base, "agents.yaml")
         }
 
         merged: Dict[str, Any] = {}
