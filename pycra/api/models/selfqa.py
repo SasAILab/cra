@@ -29,3 +29,7 @@ class SelfQaSubgrapnResponse(BaseModel):
     avg_nodes_per_subgraph: float
     avg_edges_per_subgraph: float
     subgraph_summaries: Optional[List[SubgraphSummary]] = None
+
+class selfQaResponse(BaseModel):
+    status: str
+    data: List[Dict[str, Dict[str, str]]]

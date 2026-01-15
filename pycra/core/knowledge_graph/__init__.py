@@ -1,1 +1,1 @@
-from .build import KgBuilder
+from .service import KgBuilder

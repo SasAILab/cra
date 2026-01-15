@@ -1,0 +1,257 @@
+# pylint: disable=C0301
+ANSWER_REPHRASING_CONTEXT_EN: str = """---Role---
+You are an NLP expert responsible for generating a logically structured and coherent rephrased version of the TEXT based on ENTITIES and RELATIONSHIPS provided below. You may refer to the original text to assist in generating the rephrased version, but ensure that the final output text meets the requirements.
+Use English as output language.
+
+---Goal---
+To generate a version of the text that is rephrased and conveys the same meaning as the original entity and relationship descriptions, while:
+1. Following a clear logical flow and structure
+2. Establishing proper cause-and-effect relationships
+3. Ensuring temporal and sequential consistency
+4. Creating smooth transitions between ideas using conjunctions and appropriate linking words like "firstly," "however," "therefore," etc.
+
+---Instructions---
+1. Analyze the provided ENTITIES and RELATIONSHIPS carefully to identify:
+   - Key concepts and their hierarchies
+   - Temporal sequences and chronological order
+   - Cause-and-effect relationships
+   - Dependencies between different elements
+
+2. Organize the information in a logical sequence by:
+   - Starting with foundational concepts
+   - Building up to more complex relationships
+   - Grouping related ideas together
+   - Creating clear transitions between sections
+
+3. Rephrase the text while maintaining:
+   - Logical flow and progression
+   - Clear connections between ideas
+   - Proper context and background
+   - Coherent narrative structure
+
+4. Review and refine the text to ensure:
+   - Logical consistency throughout
+   - Clear cause-and-effect relationships
+
+################
+-ORIGINAL TEXT-
+################
+{original_text}
+
+################
+-ENTITIES-
+################
+{entities}
+
+################
+-RELATIONSHIPS-
+################
+{relationships}
+
+"""
+
+ANSWER_REPHRASING_CONTEXT_ZH: str = """---角色---
+你是一位NLP专家，负责根据下面提供的实体和关系生成逻辑结构清晰且连贯的文本重述版本。你可以参考原始文本辅助生成，但需要确保最终输出的文本符合要求。
+使用中文作为输出语言。
+
+---目标---
+生成文本的重述版本，使其传达与原始实体和关系描述相同的含义，同时：
+1. 遵循清晰的逻辑流和结构
+2. 建立适当的因果关系
+3. 确保时间和顺序的一致性
+4. 使用连词和适当的连接词(如"首先"、"然而"、"因此"等)创造流畅的过渡
+
+---说明---
+1. 仔细分析提供的实体和关系，以识别：
+    - 关键概念及其层级关系
+    - 时间序列和时间顺序
+    - 因果关系
+    - 不同元素之间的依赖关系
+2. 通过以下方式将信息组织成逻辑顺序：
+    - 从基础概念开始
+    - 逐步建立更复杂的关系
+    - 将相关的想法分组在一起
+    - 在各部分之间创建清晰的过渡
+3. 重述文本时保持：
+    - 逻辑流畅
+    - 概念之间的清晰联系
+    - 适当的上下文和背景
+    - 连贯的叙述结构
+4. 检查和完善文本以确保：
+    - 整体逻辑一致性
+    - 清晰的因果关系
+
+################
+-原始文本-
+################
+{original_text}
+
+################
+-实体-
+################
+{entities}
+
+################
+-关系-
+################
+{relationships}
+
+"""
+
+ANSWER_REPHRASING_EN: str = """---Role---
+You are an NLP expert responsible for generating a logically structured and coherent rephrased version of the TEXT based on ENTITIES and RELATIONSHIPS provided below.
+Use English as output language.
+
+---Goal---
+To generate a version of the text that is rephrased and conveys the same meaning as the original entity and relationship descriptions, while:
+1. Following a clear logical flow and structure
+2. Establishing proper cause-and-effect relationships
+3. Ensuring temporal and sequential consistency
+4. Creating smooth transitions between ideas using conjunctions and appropriate linking words like "firstly," "however," "therefore," etc.
+
+---Instructions---
+1. Analyze the provided ENTITIES and RELATIONSHIPS carefully to identify:
+   - Key concepts and their hierarchies
+   - Temporal sequences and chronological order
+   - Cause-and-effect relationships
+   - Dependencies between different elements
+
+2. Organize the information in a logical sequence by:
+   - Starting with foundational concepts
+   - Building up to more complex relationships
+   - Grouping related ideas together
+   - Creating clear transitions between sections
+
+3. Rephrase the text while maintaining:
+   - Logical flow and progression
+   - Clear connections between ideas
+   - Proper context and background
+   - Coherent narrative structure
+
+4. Review and refine the text to ensure:
+   - Logical consistency throughout
+   - Clear cause-and-effect relationships
+
+**Attention: Please directly provide the rephrased text without any additional content or analysis.**
+
+################
+-ENTITIES-
+################
+{entities}
+
+################
+-RELATIONSHIPS-
+################
+{relationships}
+
+"""
+
+ANSWER_REPHRASING_ZH: str = """---角色---
+你是一位NLP专家，负责根据下面提供的实体和关系生成逻辑结构清晰且连贯的文本重述版本。
+使用中文作为输出语言。
+
+---目标---
+生成文本的重述版本，使其传达与原始实体和关系描述相同的含义，同时：
+1. 遵循清晰的逻辑流和结构
+2. 建立适当的因果关系
+3. 确保时间和顺序的一致性
+4. 使用连词和适当的连接词(如"首先"、"然而"、"因此"等)创造流畅的过渡
+
+---说明---
+1. 仔细分析提供的实体和关系，以识别：
+    - 关键概念及其层级关系
+    - 时间序列和时间顺序
+    - 因果关系
+    - 不同元素之间的依赖关系
+2. 通过以下方式将信息组织成逻辑顺序：
+    - 从基础概念开始
+    - 逐步建立更复杂的关系
+    - 将相关的想法分组在一起
+    - 在各部分之间创建清晰的过渡
+3. 重述文本时保持：
+    - 逻辑流畅
+    - 概念之间的清晰联系
+    - 适当的上下文和背景
+    - 连贯的叙述结构
+4. 检查和完善文本以确保：
+    - 整体逻辑一致性
+    - 清晰的因果关系
+
+**注意： 请你直接给出重述文本，不要输出任何额外的内容，也不要进行任何分析。**
+
+################
+-实体-
+################
+{entities}
+
+################
+-关系-
+################
+{relationships}
+
+"""
+
+REQUIREMENT_ZH = """
+################
+请在下方直接输出连贯的重述文本，不要输出任何额外的内容。
+
+输出格式：
+<rephrased_text>rephrased_text_here</rephrased_text>
+
+重述文本:
+"""
+
+REQUIREMENT_EN = """
+################
+Please directly output the coherent rephrased text below, without any additional content.
+
+Output format:
+<rephrased_text>rephrased_text_here</rephrased_text>
+
+Rephrased Text:
+"""
+
+QUESTION_GENERATION_EN: str = """The answer to a question is provided. Please generate a question that corresponds to the answer.
+
+The answer for which a question needs to be generated is as follows:
+<answer>{answer}</answer>
+
+Please note the following requirements:
+1. Only output one question text without any additional explanations or analysis.
+2. Do not repeat the content of the answer or any fragments of it.
+3. The question must be independently understandable and fully match the answer.
+
+Output format:
+<question>question_text</question>
+
+Question:
+"""
+
+QUESTION_GENERATION_ZH: str = """下面提供了一个问题的答案，请生成一个与答案对应的问题。
+
+需要生成问题的答案如下：
+<answer>{answer}</answer>
+
+请注意下列要求：
+1. 仅输出一个问题文本，不得包含任何额外说明或分析
+2. 不得重复答案内容或其中任何片段
+3. 问题必须可独立理解且与答案完全匹配
+
+输出格式：
+<question>question_text</question>
+
+问题:
+"""
+
+AGGREGATED_GENERATION_PROMPT = {
+    "en": {
+        "ANSWER_REPHRASING": ANSWER_REPHRASING_EN + REQUIREMENT_EN,
+        "ANSWER_REPHRASING_CONTEXT": ANSWER_REPHRASING_CONTEXT_EN + REQUIREMENT_EN,
+        "QUESTION_GENERATION": QUESTION_GENERATION_EN,
+    },
+    "zh": {
+        "ANSWER_REPHRASING": ANSWER_REPHRASING_ZH + REQUIREMENT_ZH,
+        "ANSWER_REPHRASING_CONTEXT": ANSWER_REPHRASING_CONTEXT_ZH + REQUIREMENT_ZH,
+        "QUESTION_GENERATION": QUESTION_GENERATION_ZH,
+    },
+}

@@ -10,11 +10,15 @@ from typing import Optional, Union
 from pycra.core.llm_server import LLMFactory
 from pycra.core.knowledge_graph.graph_store import neo4j_importer
 from pycra.core.knowledge_graph import KgBuilder
+from pycra.core.agents import GenerateService
 
 class PyCraFactory(ABC):
 
     @abstractmethod
     def create_current_contract_graphBuild_workflow(self) -> KgBuilder:
+        raise NotImplementedError
+    @abstractmethod
+    def create_self_qa_workflow(self) -> GenerateService:
         raise NotImplementedError
 
 class ProductionWorkflowFactory(PyCraFactory):
@@ -33,6 +37,8 @@ class ProductionWorkflowFactory(PyCraFactory):
 
     def create_current_contract_graphBuild_workflow(self) -> KgBuilder:
         return KgBuilder(self.llm_pycra)
+    def create_self_qa_workflow(self) -> GenerateService:
+        return GenerateService(llm_pycra=self.llm_pycra)
 
 _factory: Optional[PyCraFactory] = None
 
@@ -46,3 +52,6 @@ async def get_factory() -> ProductionWorkflowFactory:
 async def get_kgBuilder_async() -> KgBuilder:
     factory = await get_factory()
     return factory.create_current_contract_graphBuild_workflow()
+async def get_generatorSerivce_async() -> GenerateService:
+    factory = await get_factory()
+    return factory.create_self_qa_workflow()

@@ -1,35 +1,41 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
-from pycra.api.models.common import ContractGraphRequest
+import json
+import os
+import pandas as pd
+from fastapi import APIRouter, Depends, HTTPException
+
+from pycra import settings
 from pycra.utils.logger import selfqa_logger as logger
-from pycra.core.knowledge_graph import KgBuilder
-from pycra.api.core.dependencies import get_kgBuilder_async, get_factory
-from pycra.api.models.knowledge_graph import BuildReturnModel
+from pycra.api.core.dependencies import get_generatorSerivce_async
+from pycra.api.models.selfqa import selfQaResponse
 from pycra.api.models.selfqa import SelfQaRequest, SelfQaSubgrapnResponse
 from pycra.core.agents.selfqa.sub_graph import SubGraphBuilder
+from pycra.core.agents import GenerateService
 selfqa_router = APIRouter(prefix="/selfqa", tags=["SELF-QA"])  # current contract knowledge graph
 
 
-@selfqa_router.post("/build", response_model=BuildReturnModel, tags=["SELF-QA"],
+@selfqa_router.post("/build", response_model=selfQaResponse, tags=["SELF-QA"],
                   summary="Build a contract graph for current contract")
-async def build_selfqa(request: ContractGraphRequest,
-                               kg_builder: KgBuilder = Depends(get_kgBuilder_async), ) -> BuildReturnModel:
+async def build_selfqa(request: SelfQaRequest,
+                               generatorService: GenerateService = Depends(get_generatorSerivce_async), ) -> selfQaResponse:
     try:
-        logger.info(f"build contract graph: id={request.contract_id}")
+        results = []
         # Extract entities and relationships
-        nodes, edges, namespaces = await kg_builder.build_graph(
-            md_content=request.contract_text,
-            contract_id=request.contract_id
+        async for result in generatorService.build(namespace=request.namespace):
+            results.append(result)
+        results_serializable = [r.to_dict(orient="records") if isinstance(r, pd.DataFrame) else r
+                                for r in results]
+        logger.info(f"results : {results_serializable}")
+        save_dir = f"{settings.kg.working_dir}/selfqa_data/{request.namespace}"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = f"{save_dir}/{settings.agents.selfqa.method}.json"
+        with open(save_path, 'w', encoding='utf-8') as f:
+            json.dump(results_serializable, f, ensure_ascii=False, indent=2)
+        logger.info(f"self qa data saved to {save_path}")
+        logger.info(f"{request.namespace} successfully generate self qa data")
+        response = selfQaResponse(
+            status = "success",
+            data = results_serializable
         )
-        # Prepare response
-        response = BuildReturnModel(
-            status="success",
-            nodes=nodes,
-            edges=edges,
-            graph_namespace=namespaces
-        )
-
-        logger.info(f"{request.contract_id} successfully built contract graph")
         return response
 
     except Exception as e:

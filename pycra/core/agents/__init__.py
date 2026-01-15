@@ -1,0 +1,1 @@
+from .selfqa import GenerateService
