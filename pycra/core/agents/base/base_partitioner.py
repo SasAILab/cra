@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Union, Any
+from typing import List, Union, Any, AsyncIterator
 from pycra.core.knowledge_graph.graph_store import BaseGraphStorage
 
 @dataclass
@@ -13,11 +13,11 @@ class Community:
 
 class BasePartitioner(ABC):
     @abstractmethod
-    def partition(
+    async def partition(
         self,
         g: BaseGraphStorage,
         **kwargs: Any,
-    ) -> List[Community]:
+    ) -> AsyncIterator[Community]:
         """
         Graph -> Communities
         :param g: Graph storage instance
@@ -26,8 +26,8 @@ class BasePartitioner(ABC):
         """
 
     @staticmethod
-    def community2batch(
-        comm: Community, g: BaseGraphStorage
+    async def community2batch(
+            comm: Community, g: BaseGraphStorage
     ) -> tuple[
         list[tuple[str, dict]], list[tuple[Any, Any, dict] | tuple[Any, Any, Any]]
     ]:
@@ -41,7 +41,7 @@ class BasePartitioner(ABC):
         edges = comm.edges
         nodes_data = []
         for node in nodes:
-            node_data = g.get_node(node)
+            node_data = await g.get_node(node)  # 添加 await
             if node_data:
                 nodes_data.append((node, node_data))
         edges_data = []
@@ -53,7 +53,7 @@ class BasePartitioner(ABC):
             if u == v:
                 continue
 
-            edge_data = g.get_edge(u, v) or g.get_edge(v, u)
+            edge_data = await g.get_edge(u, v) or await g.get_edge(v, u)  # 添加 await
             if edge_data:
                 edges_data.append((u, v, edge_data))
         return nodes_data, edges_data

@@ -6,7 +6,7 @@
 # @Description: the subgraph partition algorithm
 import random
 from collections import deque
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, AsyncIterator
 
 from pycra.core.agents.base import BasePartitioner, Community
 from pycra.core.knowledge_graph.graph_store import BaseGraphStorage
@@ -32,14 +32,14 @@ class BFSPartitioner(BasePartitioner):
     (A unit is a node or an edge.)
     """
 
-    def partition(
+    async def partition(
         self,
         g: BaseGraphStorage,
         max_units_per_community: int = 1,
         **kwargs: Any,
-    ) -> Iterable[Community]:
-        nodes = g.get_all_nodes()
-        edges = g.get_all_edges()
+    ) -> AsyncIterator[Community]:
+        nodes = await g.get_all_nodes()
+        edges = await g.get_all_edges()
 
         adj, _ = self._build_adjacency_list(nodes, edges)
 
@@ -96,14 +96,14 @@ class DFSPartitioner(BasePartitioner):
     (In GraphGen, a unit is defined as a node or an edge.)
     """
 
-    def partition(
+    async def partition(
         self,
         g: BaseGraphStorage,
         max_units_per_community: int = 1,
         **kwargs: Any,
-    ) -> Iterable[Community]:
-        nodes = g.get_all_nodes()
-        edges = g.get_all_edges()
+    ) -> AsyncIterator[Community]:
+        nodes = await g.get_all_nodes()
+        edges = await g.get_all_edges()
 
         adj, _ = self._build_adjacency_list(nodes, edges)
 
