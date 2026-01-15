@@ -1,7 +1,4 @@
-contract_review:
-  max_iterations: 3
-  timeout: 600
-
-selfqa:
-  method: "aggregated" # multi_hop / cot
-  data_format: "ChatML" # Sharegpt / Alpaca
+agents:
+  selfqa:
+    method: "aggregated"   # multi_hop / cot
+    data_format: "ChatML"  # Sharegpt / Alpaca

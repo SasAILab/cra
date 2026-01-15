@@ -25,12 +25,6 @@ class LoggingSettings(BaseModel):
     file_handler_maxBytes: int
     file_handler_backupCount: int
 
-class LLMProviderSettings(BaseModel):
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None
-    endpoint: Optional[str] = None
-    api_version: Optional[str] = None
-
 class LLMSettings(BaseModel):
     model_name: str
     temperature: float
@@ -88,17 +82,12 @@ class RagSettings(BaseModel):
     score_threshold: float
     graphrag: Optional[GraphRAGSettings] = None
 
-class ContractReviewAgentSettings(BaseModel):
-    max_iterations: int
-    timeout: int
-
 class SelfQASettings(BaseModel):
     method: str
     data_format: str
 
 class AgentSettings(BaseModel):
-    contract_review: ContractReviewAgentSettings
-    selfqa: ServerSettings
+    selfqa: SelfQASettings
 
 class Config(BaseSettings):
     app: AppSettings
