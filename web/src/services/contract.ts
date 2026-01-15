@@ -1,6 +1,7 @@
 import { apiFetch, CONTRACT_SERVICE_URL } from "@/lib/api";
 import { ContractContent, ContractMain } from "@/types/contract";
 import { useAuthStore } from "@/store/auth";
+import { frontendLogger } from "@/lib/frontend-logger";
 
 export const contractService = {
   uploadSingle: async (file: File, category: string, department: string): Promise<ContractMain> => {
@@ -10,15 +11,23 @@ export const contractService = {
     formData.append("department", department);
     const token = useAuthStore.getState().token || undefined;
     
-    const res = await apiFetch("/upload/single", {
-      method: "POST",
-      body: formData,
-    }, token, CONTRACT_SERVICE_URL);
-    
-    if (res.code !== 200) {
-        throw new Error(res.message || "Upload failed");
+    frontendLogger.info(`Uploading single file: ${file.name}`, { category, department });
+
+    try {
+        const res = await apiFetch("/upload/single", {
+          method: "POST",
+          body: formData,
+        }, token, CONTRACT_SERVICE_URL);
+        
+        if (res.code !== 200) {
+            throw new Error(res.message || "Upload failed");
+        }
+        frontendLogger.info(`Upload success: ${file.name}`);
+        return res.data;
+    } catch (e: any) {
+        frontendLogger.error(`Upload failed: ${file.name}`, { error: e.message });
+        throw e;
     }
-    return res.data;
   },
 
   uploadBatch: async (files: File[], category: string, department: string): Promise<ContractMain[]> => {
@@ -171,14 +180,22 @@ export const contractService = {
 
   reviewContract: async (contract: ContractMain): Promise<ContractMain> => {
     const token = useAuthStore.getState().token || undefined;
-    const res = await apiFetch("/agent/review", {
-        method: "POST",
-        body: JSON.stringify(contract)
-    }, token, CONTRACT_SERVICE_URL);
+    frontendLogger.info(`Starting review for contract: ${contract.id}`, { contractName: contract.contractName });
+    
+    try {
+        const res = await apiFetch("/agent/review", {
+            method: "POST",
+            body: JSON.stringify(contract)
+        }, token, CONTRACT_SERVICE_URL);
 
-    if (res.code !== 200) {
-        throw new Error(res.message || "Review contract failed");
+        if (res.code !== 200) {
+            throw new Error(res.message || "Review contract failed");
+        }
+        frontendLogger.info(`Review started successfully for contract: ${contract.id}`);
+        return res.data;
+    } catch (e: any) {
+        frontendLogger.error(`Failed to start review for contract: ${contract.id}`, { error: e.message });
+        throw e;
     }
-    return res.data;
   }
 };
