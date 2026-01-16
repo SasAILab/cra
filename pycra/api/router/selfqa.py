@@ -4,6 +4,7 @@ import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 
 from pycra import settings
+from pycra.utils.common import normalize_result, serialize_item
 from pycra.utils.logger import selfqa_logger as logger
 from pycra.api.core.dependencies import get_generatorSerivce_async
 from pycra.api.models.selfqa import selfQaResponse
@@ -21,20 +22,23 @@ async def build_selfqa(request: SelfQaRequest,
         results = []
         # Extract entities and relationships
         async for result in generatorService.build(namespace=request.namespace):
-            results.append(result)
-        results_serializable = [r.to_dict(orient="records") if isinstance(r, pd.DataFrame) else r
-                                for r in results]
-        logger.info(f"results : {results_serializable}")
+            for item in normalize_result(result):
+                serialized = serialize_item(item)
+                if isinstance(serialized, list):
+                    results.extend(serialized)
+                else:
+                    results.append(serialized)
+        logger.info(f"results : {results}")
         save_dir = f"{settings.kg.working_dir}/selfqa_data/{request.namespace}"
         os.makedirs(save_dir, exist_ok=True)
         save_path = f"{save_dir}/{settings.agents.selfqa.method}.json"
         with open(save_path, 'w', encoding='utf-8') as f:
-            json.dump(results_serializable, f, ensure_ascii=False, indent=2)
+            json.dump(results, f, ensure_ascii=False, indent=2)
         logger.info(f"self qa data saved to {save_path}")
         logger.info(f"{request.namespace} successfully generate self qa data")
         response = selfQaResponse(
             status = "success",
-            data = results_serializable
+            data = results
         )
         return response
 

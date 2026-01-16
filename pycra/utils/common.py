@@ -6,6 +6,7 @@
 # @Description:
 import html
 import json
+import pandas as pd
 import os
 import re
 from typing import Any, Callable
@@ -134,3 +135,20 @@ def time_record(func: Callable):
             print(f"函数 {func.__name__} 执行时间: {end - start:.6f} 秒")
             return result
         return sync_wrapper
+
+def normalize_result(result):
+    """
+    统一把 result 变成可迭代对象
+    """
+    if isinstance(result, list):
+        return result
+    return [result]
+
+
+def serialize_item(item):
+    """
+    统一序列化单个 item
+    """
+    if isinstance(item, pd.DataFrame):
+        return item.to_dict(orient="records")
+    return item

@@ -38,15 +38,12 @@ class GenerateService:
 
     async def build(self, namespace) -> Union[pd.DataFrame, Iterable[pd.DataFrame]]:
         async for batch in self.subgraph_builder(namespace):
-            try:
-                result = await self.run(batch)
-                if inspect.isgenerator(result): # Determine if result is a generator
-                    for r in result:
-                        yield r
-                else:
-                    yield result
-            finally:
-                logger.info(f"the batch successfully built")
+            result = await self.run(batch)
+            if inspect.isgenerator(result): # Determine if result is a generator
+                for r in result:
+                    yield r
+            else:
+                yield result
 
     async def run(self, batch: pd.DataFrame) -> pd.DataFrame:
         """
@@ -62,7 +59,7 @@ class GenerateService:
         :param items
         :return: QA pairs
         """
-        logger.info("[Generation] mode: %s, batches: %d", self.method, len(items))
+        # logger.info("[Generation] mode: %s, batches: %d", self.method, len(items))
         items = [(item["nodes"], item["edges"]) for item in items] # To prevent multiple input parameters from being received by yield
         results = await run_concurrent(
             self.generator.generate,

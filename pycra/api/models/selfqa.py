@@ -32,4 +32,4 @@ class SelfQaSubgrapnResponse(BaseModel):
 
 class selfQaResponse(BaseModel):
     status: str
-    data: List[Dict[str, Dict[str, str]]]
+    data: List[Dict[str, Any]]
