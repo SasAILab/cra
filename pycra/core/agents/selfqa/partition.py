@@ -6,7 +6,11 @@
 # @Description: the subgraph partition algorithm
 import random
 from collections import deque
-from typing import Any, Iterable, List, AsyncIterator
+from dataclasses import dataclass
+from typing import Any, Iterable, List, AsyncIterator, Dict, Set, Tuple
+import igraph as ig
+from collections import defaultdict
+from leidenalg import ModularityVertexPartition, find_partition
 
 from pycra.core.agents.base import BasePartitioner, Community
 from pycra.core.knowledge_graph.graph_store import BaseGraphStorage
@@ -37,7 +41,7 @@ class BFSPartitioner(BasePartitioner):
         g: BaseGraphStorage,
         max_units_per_community: int = 1,
         **kwargs: Any,
-    ) -> AsyncIterator[Community]:
+    ) -> List[Community]:
         nodes = await g.get_all_nodes()
         edges = await g.get_all_edges()
 
@@ -45,6 +49,7 @@ class BFSPartitioner(BasePartitioner):
 
         used_n: set[str] = set()
         used_e: set[frozenset[str]] = set()
+        communities: List[Community] = []
 
         units = [(NODE_UNIT, n[0]) for n in nodes] + [
             (EDGE_UNIT, frozenset((u, v))) for u, v, _ in edges
@@ -78,7 +83,9 @@ class BFSPartitioner(BasePartitioner):
                     if it in used_e:
                         continue
                     used_e.add(it)
-                    comm_e.append(tuple(sorted(it)))
+
+                    u, v = it
+                    comm_e.append((u, v))
                     cnt += 1
                     # push nodes that are not visited
                     for n in it:
@@ -86,7 +93,11 @@ class BFSPartitioner(BasePartitioner):
                             queue.append((NODE_UNIT, n))
 
             if comm_n or comm_e:
-                yield Community(id=seed, nodes=comm_n, edges=comm_e)
+                communities.append(
+                    Community(id=len(communities), nodes=comm_n, edges=comm_e)
+                )
+
+        return communities
 
 class DFSPartitioner(BasePartitioner):
     """
@@ -101,7 +112,7 @@ class DFSPartitioner(BasePartitioner):
         g: BaseGraphStorage,
         max_units_per_community: int = 1,
         **kwargs: Any,
-    ) -> AsyncIterator[Community]:
+    ) -> List[Community]:
         nodes = await g.get_all_nodes()
         edges = await g.get_all_edges()
 
@@ -109,6 +120,7 @@ class DFSPartitioner(BasePartitioner):
 
         used_n: set[str] = set()
         used_e: set[frozenset[str]] = set()
+        communities: List[Community] = []
 
         units = [(NODE_UNIT, n[0]) for n in nodes] + [
             (EDGE_UNIT, frozenset((u, v))) for u, v, _ in edges
@@ -121,8 +133,7 @@ class DFSPartitioner(BasePartitioner):
             ):
                 continue
 
-            comm_n: List[str] = []
-            comm_e: List[tuple[str, str]] = []
+            comm_n, comm_e = [], []
             stack = [(kind, seed)]
             cnt = 0
 
@@ -143,7 +154,7 @@ class DFSPartitioner(BasePartitioner):
                     if it in used_e:
                         continue
                     used_e.add(it)
-                    comm_e.append(tuple(sorted(it)))
+                    comm_e.append(tuple(it))
                     cnt += 1
                     # push neighboring nodes
                     for n in it:
@@ -151,4 +162,133 @@ class DFSPartitioner(BasePartitioner):
                             stack.append((NODE_UNIT, n))
 
             if comm_n or comm_e:
-                yield Community(id=seed, nodes=comm_n, edges=comm_e)
+                communities.append(
+                    Community(id=len(communities), nodes=comm_n, edges=comm_e)
+                )
+
+        return communities
+
+class LeidenPartitioner(BasePartitioner):
+    """
+    Leiden partitioner that partitions the graph into communities using the Leiden algorithm.
+    """
+
+    async def partition(
+        self,
+        g: BaseGraphStorage,
+        max_size: int = 20,
+        use_lcc: bool = False,
+        random_seed: int = 42,
+        **kwargs: Any,
+    ) -> List[Community]:
+        """
+        Leiden Partition follows these steps:
+        1. export the graph from graph storage
+        2. use the leiden algorithm to detect communities, get {node: community_id}
+        3. split large communities if max_size is given
+        4. convert {node: community_id} to List[Community]
+        :param g
+        :param max_size: maximum size of each community, if None or <=0, no limit
+        :param use_lcc: whether to use the largest connected component only
+        :param random_seed
+        :param kwargs: other parameters for the leiden algorithm
+        :return:
+        """
+        nodes = await g.get_all_nodes()  # List[Tuple[str, dict]]
+        edges = await g.get_all_edges()  # List[Tuple[str, str, dict]]
+
+        node2cid: Dict[str, int] = await self._run_leiden(
+            nodes, edges, use_lcc, random_seed
+        )
+
+        if max_size is not None and max_size > 0:
+            node2cid = await self._split_communities(node2cid, max_size)
+
+        cid2nodes: Dict[int, List[str]] = defaultdict(list)
+        for n, cid in node2cid.items():
+            cid2nodes[cid].append(n)
+
+        communities: List[Community] = []
+        for cid, nodes in cid2nodes.items():
+            node_set: Set[str] = set(nodes)
+            comm_edges: List[Tuple[str, str]] = [
+                (u, v) for u, v, _ in edges if u in node_set and v in node_set
+            ]
+            communities.append(Community(id=cid, nodes=nodes, edges=comm_edges))
+        return communities
+
+    @staticmethod
+    async def _run_leiden(
+        nodes: List[Tuple[str, dict]],
+        edges: List[Tuple[str, str, dict]],
+        use_lcc: bool = False,
+        random_seed: int = 42,
+    ) -> Dict[str, int]:
+        # build igraph
+        ig_graph = ig.Graph.TupleList(((u, v) for u, v, _ in edges), directed=False)
+
+        # remove isolated nodes
+        ig_graph.delete_vertices(ig_graph.vs.select(_degree_eq=0))
+
+        node2cid: Dict[str, int] = {}
+        if use_lcc:
+            lcc = ig_graph.components().giant()
+            partition = find_partition(lcc, ModularityVertexPartition, seed=random_seed)
+            for part_id, cluster in enumerate(partition):
+                for v in cluster:
+                    node2cid[lcc.vs[v]["name"]] = part_id
+        else:
+            offset = 0
+            for component in ig_graph.components():
+                subgraph = ig_graph.induced_subgraph(component)
+                partition = find_partition(
+                    subgraph, ModularityVertexPartition, seed=random_seed
+                )
+                for part_id, cluster in enumerate(partition):
+                    for v in cluster:
+                        original_node = subgraph.vs[v]["name"]
+                        node2cid[original_node] = part_id + offset
+                offset += len(partition)
+        return node2cid
+
+    @staticmethod
+    async def _split_communities(
+        node2cid: Dict[str, int], max_size: int
+    ) -> Dict[str, int]:
+        """
+        Split communities larger than max_size into smaller sub-communities.
+        """
+        cid2nodes: Dict[int, List[str]] = defaultdict(list)
+        for n, cid in node2cid.items():
+            cid2nodes[cid].append(n)
+
+        new_mapping: Dict[str, int] = {}
+        new_cid = 0
+        for nodes in cid2nodes.values():
+            if len(nodes) <= max_size:
+                for n in nodes:
+                    new_mapping[n] = new_cid
+                new_cid += 1
+            else:
+                for start in range(0, len(nodes), max_size):
+                    chunk = nodes[start : start + max_size]
+                    for n in chunk:
+                        new_mapping[n] = new_cid
+                    new_cid += 1
+        return new_mapping
+
+
+
+if __name__ == "__main__":
+    # leiden algorithm test
+    import asyncio
+    from pycra import settings
+    from pycra.core.knowledge_graph.graph_store import NetworkXStorage
+    kg_instance = NetworkXStorage(
+        working_dir=settings.kg.working_dir, namespace="graph_17_8563139ac1688cf12ab0406911831724"
+    )
+    partitioner = LeidenPartitioner()
+    async def main():
+        communities = await partitioner.partition(g=kg_instance)
+        return communities
+    results = asyncio.run(main())

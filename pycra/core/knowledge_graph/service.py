@@ -313,7 +313,7 @@ class KgBuilder:
         results = await run_concurrent(
             self.local_perception_recognition,
             init_chunks,
-            desc="[2/4]Extracting entities and relationships from chunks",
+            desc="pycra.cckg: Extracting entities and relationships from chunks",
             unit="chunk",
         )
         namespace_postfix = compute_content_hash(md_content)
@@ -333,12 +333,12 @@ class KgBuilder:
         await run_concurrent(
             lambda kv: self.merge_nodes(kv, kg_instance=kg_instance),
             list(nodes.items()),
-            desc="Inserting entities into storage",
+            desc="pycra.cckg: Inserting entities into storage",
         )
         await run_concurrent(
             lambda kv: self.merge_edges(kv, kg_instance=kg_instance),
             list(edges.items()),
-            desc="Inserting relationships into storage",
+            desc="pycra.cckg: Inserting relationships into storage",
         )
         g = await kg_instance.get_graph()
         file_name = f"{settings.kg.working_dir}/{namespace}.graphml"

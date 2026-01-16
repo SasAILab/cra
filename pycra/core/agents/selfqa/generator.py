@@ -85,7 +85,6 @@ class BaseGenerator(ABC):
             raise ValueError(f"Unknown output data format: {output_data_format}")
         return results
 
-
 class AggregatedGenerator(BaseGenerator):
     """
     Aggregated Generator follows a TWO-STEP process:
@@ -93,7 +92,6 @@ class AggregatedGenerator(BaseGenerator):
                  The rephrased text is considered as answer to be used in the next step.
     2. question generation: Generate relevant questions based on the rephrased text.
     """
-
     @staticmethod
     def build_prompt(
         batch: tuple[list[tuple[str, dict]], list[tuple[Any, Any, dict]]]
@@ -175,7 +173,6 @@ class AggregatedGenerator(BaseGenerator):
             logger.warning("Failed to parse question from response: %s", response)
             return {"question": ""}
         return {"question": question.strip('"').strip("'")}
-
     async def generate(
         self,
         batch: tuple[
@@ -208,8 +205,6 @@ class AggregatedGenerator(BaseGenerator):
         }
         result.update(qa_pairs)
         return result
-
-
 class CoTGenerator(BaseGenerator):
     @staticmethod
     def build_prompt(
@@ -330,7 +325,6 @@ class CoTGenerator(BaseGenerator):
         result.update(qa_pairs)
         return result
 
-
 class MultiHopGenerator(BaseGenerator):
     @staticmethod
     def build_prompt(
@@ -378,3 +372,4 @@ class MultiHopGenerator(BaseGenerator):
                 "answer": answer,
             }
         }
+

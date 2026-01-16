@@ -4,7 +4,7 @@
 # @Author  : lizimo@nuist.edu.cn
 # @File    : selfqa.py
 # @Description:
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List, Tuple, Union
 from pydantic import BaseModel
 
 class SelfQaRequest(BaseModel):
@@ -21,15 +21,28 @@ class SubgraphSummary(BaseModel):
 
 class SelfQaSubgrapnResponse(BaseModel):
     """SELF-QA 子图生成响应"""
-    success: bool
-    message: str
-    total_subgraphs: int
-    total_nodes: int
-    total_edges: int
-    avg_nodes_per_subgraph: float
-    avg_edges_per_subgraph: float
-    subgraph_summaries: Optional[List[SubgraphSummary]] = None
+    status: str
+    batches: list[
+    tuple[
+        list[tuple[str, dict]],
+        list[Union[
+            tuple[Any, Any, dict],
+            tuple[Any, Any, Any]
+        ]]
+    ]
+]
+    batches_leiden: list[
+    tuple[
+        list[tuple[str, dict]],
+        list[Union[
+            tuple[Any, Any, dict],
+            tuple[Any, Any, Any]
+        ]]
+    ]
+]
 
 class selfQaResponse(BaseModel):
     status: str
-    data: List[Dict[str, Any]]
+    aggregated: List[Dict[str, Any]]
+    multi_hop: List[Dict[str, Any]]
+    cot: List[Dict[str, Any]]

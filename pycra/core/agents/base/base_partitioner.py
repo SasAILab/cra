@@ -17,7 +17,7 @@ class BasePartitioner(ABC):
         self,
         g: BaseGraphStorage,
         **kwargs: Any,
-    ) -> AsyncIterator[Community]:
+    ) -> List[Community]:
         """
         Graph -> Communities
         :param g: Graph storage instance
@@ -27,36 +27,38 @@ class BasePartitioner(ABC):
 
     @staticmethod
     async def community2batch(
-            comm: Community, g: BaseGraphStorage
-    ) -> tuple[
-        list[tuple[str, dict]], list[tuple[Any, Any, dict] | tuple[Any, Any, Any]]
+        communities: List[Community], g: BaseGraphStorage
+    ) -> list[
+        tuple[
+            list[tuple[str, dict]], list[tuple[Any, Any, dict] | tuple[Any, Any, Any]]
+        ]
     ]:
         """
         Convert communities to batches of nodes and edges.
-        :param comm: Community
+        :param communities
         :param g: Graph storage instance
         :return: List of batches, each batch is a tuple of (nodes, edges)
         """
-        nodes = comm.nodes
-        edges = comm.edges
-        nodes_data = []
-        for node in nodes:
-            node_data = await g.get_node(node)  # 添加 await
-            if node_data:
-                nodes_data.append((node, node_data))
-        edges_data = []
-        for edge in edges:
-            # Filter out self-loops and invalid edges
-            if not isinstance(edge, tuple) or len(edge) != 2:
-                continue
-            u, v = edge
-            if u == v:
-                continue
-
-            edge_data = await g.get_edge(u, v) or await g.get_edge(v, u)  # 添加 await
-            if edge_data:
-                edges_data.append((u, v, edge_data))
-        return nodes_data, edges_data
+        batches = []
+        for comm in communities:
+            nodes = comm.nodes
+            edges = comm.edges
+            nodes_data = []
+            for node in nodes:
+                node_data = await g.get_node(node)
+                if node_data:
+                    nodes_data.append((node, node_data))
+            edges_data = []
+            for u, v in edges:
+                edge_data = await g.get_edge(u, v)
+                if edge_data:
+                    edges_data.append((u, v, edge_data))
+                else:
+                    edge_data = await g.get_edge(v, u)
+                    if edge_data:
+                        edges_data.append((v, u, edge_data))
+            batches.append((nodes_data, edges_data))
+        return batches
 
     @staticmethod
     def _build_adjacency_list(
@@ -70,11 +72,9 @@ class BasePartitioner(ABC):
         """
         adj: dict[str, List[str]] = {n[0]: [] for n in nodes}
         edge_set: set[tuple[str, str]] = set()
-        for u, v, _ in edges:
-            if u == v:
-                continue
-            adj[u].append(v)
-            adj[v].append(u)
-            edge_set.add((u, v))
-            edge_set.add((v, u))
+        for e in edges:
+            adj[e[0]].append(e[1])
+            adj[e[1]].append(e[0])
+            edge_set.add((e[0], e[1]))
+            edge_set.add((e[1], e[0]))
         return adj, edge_set
