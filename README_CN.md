@@ -59,6 +59,14 @@ CRA 旨在将传统的人工合同审查流程转化为智能、高效、标准�
     docker-compose up -d
     ```
 
+## 核心模块
+
+### 1. Current Contract build a Knowledge Graph
+pedding
+
+### 2. Self-QA Module
+<img src="./docs/images/pycra-selfqa-framework.png" alt="pycra.selfqa" width="800"/>
+
 ## 🔮 未来计划
 
 *   **V2.0 版本**：引入高级合同优化功能，支持语义级对比及多租户架构。

@@ -68,6 +68,15 @@ The system follows a modern microservices architecture:
     docker-compose up -d
     ```
 
+## Core Module
+
+### 1. Current Contract build a Knowledge Graph
+pedding
+
+### 2. Self-QA Module
+<img src="./docs/images/pycra-selfqa-framework.png" alt="pycra.selfqa" width="800"/>
+
+
 ## 🔮 Future Plans
 
 *   **V2.0**: Advanced contract optimization with semantic comparison and multi-tenant support.
